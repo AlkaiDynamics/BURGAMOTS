@@ -6,6 +6,7 @@ import HypothesisCard from './components/HypothesisCard';
 import Timeline from './components/Timeline';
 import SolarSystemViz from './components/SolarSystemViz';
 import FlareCorrelationChart from './components/FlareCorrelationChart';
+import FullPaper from './components/FullPaper';
 import { CarringtonChart, DustBowlChart, AccuracyChart, SkillChart, GrangerChart } from './components/ValidationCharts';
 import { SystemArchDiagram, PINNDiagram, CouplingDiagram, PipelineDiagram, KeplerDiagram } from './components/Diagrams';
 import { Section } from './types';
@@ -18,6 +19,7 @@ const sections: Section[] = [
   { id: 'methodology', title: 'Methodology' },
   { id: 'validation', title: 'Validation Protocols' },
   { id: 'impact', title: 'Broader Impact' },
+  { id: 'paper', title: 'Full Paper' },
 ];
 
 function App() {
@@ -72,7 +74,10 @@ function App() {
 
   const handleDownload = (e: React.MouseEvent) => {
     e.preventDefault();
-    alert("The full BURGAMOTS Survey PDF is currently restricted to authorized research partners. Please contact the PI for access.");
+    const element = document.getElementById('paper');
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -536,6 +541,9 @@ function App() {
             </div>
           </div>
         </section>
+        
+        {/* Full Paper Section */}
+        <FullPaper />
 
         {/* Footer */}
         <footer className="py-12 px-6 border-t border-white/10 text-center">
