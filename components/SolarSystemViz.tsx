@@ -308,6 +308,91 @@ const createNebulaTexture = () => {
     return tex;
 }
 
+// Generate Cloud Texture for Earth
+const createCloudTexture = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    if(!ctx) return new THREE.Texture();
+    
+    // Transparent background
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fillRect(0,0,1024,512);
+    
+    // White clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    
+    const random = (min: number, max: number) => Math.random() * (max - min) + min;
+    
+    // Generate cloud bands
+    for(let i=0; i<600; i++) {
+         const x = random(0,1024);
+         const y = random(0,512);
+         const w = random(40, 120);
+         const h = random(10, 30);
+         
+         // Soft ellipses
+         ctx.beginPath();
+         ctx.ellipse(x, y, w, h, 0, 0, Math.PI*2);
+         ctx.fill();
+    }
+    
+    // Blur for volumetric feel
+    ctx.filter = 'blur(8px)';
+    ctx.drawImage(canvas, 0, 0);
+    ctx.filter = 'none';
+
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
+}
+
+// Generate Moon Texture
+const createMoonTexture = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    if(!ctx) return new THREE.Texture();
+
+    // Base grey
+    ctx.fillStyle = '#888888';
+    ctx.fillRect(0,0,512,256);
+
+    const random = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    // Craters (Dark circles)
+    for(let i=0; i<200; i++) {
+        const x = random(0, 512);
+        const y = random(0, 256);
+        const r = random(2, 10);
+        
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(50, 50, 50, ${random(0.3, 0.7)})`;
+        ctx.fill();
+        
+        // Crater rim highlight
+        ctx.strokeStyle = `rgba(200, 200, 200, ${random(0.1, 0.3)})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+    
+    // Maria (Dark plains)
+    for(let i=0; i<10; i++) {
+        const x = random(0, 512);
+        const y = random(50, 200);
+        const rx = random(30, 80);
+        const ry = random(20, 60);
+        
+        ctx.beginPath();
+        ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(40, 40, 40, 0.2)';
+        ctx.fill();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
+}
+
 // --- Orbital Math Engine ---
 function solveKepler(M: number, e: number): number {
   let E = M;
@@ -839,21 +924,132 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
       pGroup.add(tiltGroup);
 
       // 2. Planet Mesh (PBR + Dynamic Texture)
-      const texture = createPlanetTexture(p.name, p.color);
-      const mat = new THREE.MeshPhongMaterial({ 
-          map: texture,
-          color: 0xffffff,
-          specular: 0x333333,
-          shininess: 10,
-          emissive: p.color,
-          emissiveIntensity: 0.2
-      });
-      const geo = new THREE.SphereGeometry(p.size, 64, 64);
-      const mesh = new THREE.Mesh(geo, mat);
+      let mat: THREE.Material;
+      let mesh: THREE.Mesh;
+
+      if (p.name === 'Jupiter') {
+          // Jupiter Custom Shader (Bands + Great Red Spot)
+          mat = new THREE.ShaderMaterial({
+              uniforms: {
+                  time: { value: 0 },
+                  baseColor: { value: new THREE.Color(p.color) }
+              },
+              vertexShader: `
+                  varying vec2 vUv;
+                  varying vec3 vNormal;
+                  void main() {
+                      vUv = uv;
+                      vNormal = normalize(normalMatrix * normal);
+                      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                  }
+              `,
+              fragmentShader: `
+                  uniform float time;
+                  uniform vec3 baseColor;
+                  varying vec2 vUv;
+                  varying vec3 vNormal;
+
+                  // Noise function
+                  float hash(float n) { return fract(sin(n) * 43758.5453123); }
+                  float noise(vec2 x) {
+                      vec2 p = floor(x);
+                      vec2 f = fract(x);
+                      f = f*f*(3.0-2.0*f);
+                      float n = p.x + p.y*57.0;
+                      return mix(mix(hash(n+0.0), hash(n+1.0),f.x), mix(hash(n+57.0), hash(n+58.0),f.x),f.y);
+                  }
+
+                  void main() {
+                      // 1. Zonal Bands
+                      float bands = sin(vUv.y * 20.0 + noise(vUv * 5.0) * 0.5);
+                      vec3 col = mix(baseColor, baseColor * 0.6, smoothstep(-0.5, 0.5, bands));
+                      
+                      // 2. Great Red Spot
+                      vec2 spotCenter = vec2(0.6, 0.65);
+                      vec2 uv = vUv;
+                      uv.x += time * 0.05; // Rotate spot around planet
+                      
+                      // Distort spot coordinates for swirling
+                      vec2 d = uv - spotCenter;
+                      float angle = atan(d.y, d.x);
+                      float dist = length(d);
+                      float swirl = sin(angle * 2.0 + dist * 10.0 - time * 2.0);
+                      
+                      // Elliptical shape
+                      float spotMask = 1.0 - smoothstep(0.05, 0.12, length(vec2(d.x, d.y * 1.5)));
+                      
+                      // Add turbulence to spot
+                      spotMask *= 1.0 + noise(uv * 20.0 + time) * 0.2;
+                      
+                      vec3 spotColor = vec3(0.8, 0.2, 0.1); // Reddish-orange
+                      col = mix(col, spotColor, spotMask * 0.9);
+
+                      // Lighting (Simple Lambert)
+                      vec3 lightDir = normalize(vec3(1.0, 0.5, 1.0));
+                      float diff = max(dot(vNormal, lightDir), 0.1);
+                      
+                      gl_FragColor = vec4(col * diff, 1.0);
+                  }
+              `
+          });
+          const geo = new THREE.SphereGeometry(p.size, 64, 64);
+          mesh = new THREE.Mesh(geo, mat);
+      } else if (p.name === 'Earth') {
+          const loader = new THREE.TextureLoader();
+          const map = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
+          const specular = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg');
+          const normal = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg');
+          
+          map.colorSpace = THREE.SRGBColorSpace;
+          
+          mat = new THREE.MeshPhongMaterial({
+              map: map,
+              specularMap: specular,
+              normalMap: normal,
+              color: 0xdddddd, // Slightly dim diffuse to let blue pop
+              specular: 0x222222,
+              shininess: 25,
+              emissiveMap: specular, // Use specular map (water mask) for emission
+              emissive: 0x002255, // Deep blue glow for oceans
+              emissiveIntensity: 0.6
+          });
+          const geo = new THREE.SphereGeometry(p.size, 64, 64);
+          mesh = new THREE.Mesh(geo, mat);
+      } else {
+          // Standard Planet
+          const texture = createPlanetTexture(p.name, p.color);
+          mat = new THREE.MeshPhongMaterial({ 
+              map: texture,
+              color: 0xffffff,
+              specular: 0x333333,
+              shininess: 10,
+              emissive: p.color,
+              emissiveIntensity: 0.2
+          });
+          const geo = new THREE.SphereGeometry(p.size, 64, 64);
+          mesh = new THREE.Mesh(geo, mat);
+      }
+      
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       // Rotation logic handled in animate loop via time
       tiltGroup.add(mesh);
+
+      // Earth Clouds
+      if (p.name === 'Earth') {
+          const cloudGeo = new THREE.SphereGeometry(p.size * 1.02, 64, 64);
+          const cloudMat = new THREE.MeshPhongMaterial({
+              map: createCloudTexture(),
+              transparent: true,
+              opacity: 0.8,
+              blending: THREE.AdditiveBlending,
+              side: THREE.DoubleSide,
+              depthWrite: false
+          });
+          const cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+          mesh.add(cloudMesh); // Add to Earth mesh so it rotates with it (but we can offset rotation in loop)
+          cloudMesh.userData = { isCloud: true };
+      }
 
       // 3. Resonant Field
       const fieldGroup = new THREE.Group();
@@ -922,7 +1118,12 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
       // Earth-Moon
       if (p.name === 'Earth') {
          const moonGeo = new THREE.SphereGeometry(p.size * 0.27, 32, 32);
-         const moonMat = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.9, emissive: 0x222222, emissiveIntensity: 0.1 });
+         const moonMat = new THREE.MeshPhongMaterial({ 
+             map: createMoonTexture(),
+             color: 0xffffff,
+             shininess: 0, // Matte surface
+             specular: 0x000000
+         });
          const moon = new THREE.Mesh(moonGeo, moonMat);
          moon.castShadow = true;
          moon.receiveShadow = true;
@@ -940,8 +1141,51 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
       
       // Saturn Ring
       if (p.name === 'Saturn') {
-         const rGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.5, 64);
-         const rMat = new THREE.MeshStandardMaterial({ color: 0xcfb53b, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+         const rGeo = new THREE.RingGeometry(p.size * 1.4, p.size * 2.5, 128);
+         
+         // Ring Shader
+         const rMat = new THREE.ShaderMaterial({
+             uniforms: {
+                 baseColor: { value: new THREE.Color(0xcfb53b) },
+                 innerRadius: { value: p.size * 1.4 },
+                 outerRadius: { value: p.size * 2.5 }
+             },
+             vertexShader: `
+                 varying vec3 vPos;
+                 varying vec2 vUv;
+                 void main() {
+                     vUv = uv;
+                     vPos = position;
+                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                 }
+             `,
+             fragmentShader: `
+                 uniform vec3 baseColor;
+                 varying vec3 vPos;
+                 varying vec2 vUv;
+
+                 void main() {
+                     // Calculate radius from center
+                     float r = length(vPos);
+                     
+                     // Generate ringlets using sine waves based on radius
+                     float ringlets = sin(r * 3.0) * 0.5 + 0.5;
+                     ringlets *= sin(r * 10.0) * 0.5 + 0.5;
+                     
+                     // Gaps (Cassini Division approx)
+                     float gap = smoothstep(0.45, 0.46, vUv.x) * (1.0 - smoothstep(0.48, 0.49, vUv.x));
+                     
+                     float alpha = 0.8 * ringlets;
+                     alpha *= (1.0 - gap * 0.8); // Darken gap
+                     
+                     gl_FragColor = vec4(baseColor * (0.8 + ringlets * 0.2), alpha);
+                 }
+             `,
+             side: THREE.DoubleSide,
+             transparent: true,
+             depthWrite: false
+         });
+
          const ring = new THREE.Mesh(rGeo, rMat);
          ring.rotation.x = Math.PI / 2; // Rings align with equator
          ring.castShadow = true;
@@ -1056,6 +1300,28 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
               mesh.scale.set(scale, scale, scale);
           });
       }
+
+      // Update Jupiter Shader
+      planetsRef.current.forEach(pGroup => {
+          pGroup.children.forEach(child => { // tiltGroup
+              child.children.forEach(mesh => {
+                  if (mesh instanceof THREE.Mesh && mesh.material instanceof THREE.ShaderMaterial && mesh.geometry.type === 'SphereGeometry') {
+                      // Assuming this is Jupiter
+                      mesh.material.uniforms.time.value = frame * 0.05;
+                  }
+                  // Earth Clouds Animation
+                  if (mesh.userData.isCloud) {
+                      mesh.rotation.y += 0.0005; // Independent rotation
+                  }
+                  // Earth Cloud Child (if attached to planet mesh)
+                  mesh.children.forEach(sub => {
+                      if (sub.userData.isCloud) {
+                          sub.rotation.y += 0.0005;
+                      }
+                  });
+              });
+          });
+      });
 
       // Planets & Fields Animation
       PLANETS_DATA.forEach((p, idx) => {
