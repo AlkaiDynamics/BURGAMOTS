@@ -373,6 +373,13 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
   const [torqueIndex, setTorqueIndex] = useState(0);
   const [zScale, setZScale] = useState(6.0);
   const zScaleRef = useRef(6.0);
+  const [orbitOpacity, setOrbitOpacity] = useState(0.15);
+  const orbitOpacityRef = useRef(0.15);
+  const [visibleOrbits, setVisibleOrbits] = useState<Record<string, boolean>>({
+      'Mercury': true, 'Venus': true, 'Earth': true, 'Mars': true,
+      'Jupiter': true, 'Saturn': true, 'Uranus': true, 'Neptune': true
+  });
+  const visibleOrbitsRef = useRef(visibleOrbits);
   
   const planetsRef = useRef<THREE.Group[]>([]);
   const fieldsRef = useRef<THREE.Group[]>([]);
@@ -382,6 +389,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
   const moonRef = useRef<THREE.Mesh>(null);
   const controlsRef = useRef<OrbitControls>(null);
   const timeStepRef = useRef(TIME_STEPS[4]);
+  const orbitLinesRef = useRef<THREE.Line[]>([]);
 
   useEffect(() => {
     targetYearRef.current = year;
@@ -398,6 +406,20 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
         timeAxisGroupRef.current.scale.z = zScale;
     }
   }, [zScale]);
+
+  useEffect(() => {
+      orbitOpacityRef.current = orbitOpacity;
+      orbitLinesRef.current.forEach(line => {
+          if (line.material instanceof THREE.LineBasicMaterial) {
+              line.material.opacity = orbitOpacity;
+              line.visible = visibleOrbits[line.userData.planetName];
+          }
+      });
+  }, [orbitOpacity, visibleOrbits]);
+
+  useEffect(() => {
+    visibleOrbitsRef.current = visibleOrbits;
+  }, [visibleOrbits]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -470,14 +492,14 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
     bgGroup.add(starSystem);
 
     // --- Lighting ---
-    const sunLight = new THREE.PointLight(0xffffff, 1.2, 6000); 
+    const sunLight = new THREE.PointLight(0xffffff, 3.0, 6000); 
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
     sunLight.shadow.bias = -0.0001;
     scene.add(sunLight);
     
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
     scene.add(ambientLight);
 
     // --- Time Axis Group (Scalable Z) ---
@@ -503,6 +525,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
     timeAxisGroup.add(spineLine);
 
     // --- Planetary Trails ---
+    orbitLinesRef.current = [];
     PLANETS_DATA.forEach(planet => {
       const points: THREE.Vector3[] = [];
       const stepSize = (MAX_YEAR - MIN_YEAR) / TRAIL_STEPS;
@@ -526,31 +549,253 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
       }
       
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const opacity = planet.name === 'Earth' ? 0.95 : 0.7;
+      const opacity = orbitOpacityRef.current;
       const material = new THREE.LineBasicMaterial({ 
           color: planet.color, 
           transparent: true, 
           opacity: opacity,
           depthWrite: true
       });
-      timeAxisGroup.add(new THREE.Line(geometry, material));
+      const line = new THREE.Line(geometry, material);
+      line.userData = { planetName: planet.name };
+      line.visible = visibleOrbitsRef.current[planet.name];
+      orbitLinesRef.current.push(line);
+      timeAxisGroup.add(line);
     });
 
     const cursorGroup = new THREE.Group();
     scene.add(cursorGroup);
 
-    // Sun Mesh
+    // Sun Mesh (Shader Based)
     const sunGeo = new THREE.SphereGeometry(4, 64, 64);
-    const sunMat = new THREE.MeshBasicMaterial({ color: 0xffdb4d });
+    
+    // Custom Shader Material for Burgamot Sun
+    const sunMat = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            torque: { value: 0.0 },
+            coreColor: { value: new THREE.Color(0x332200) }, // Dark Golden Heart
+            surfaceColor: { value: new THREE.Color(0x550011) }, // Deep Burgamot
+            glowColor: { value: new THREE.Color(0xffcc00) } // Bright Gold
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform float time;
+            uniform float torque;
+            uniform vec3 coreColor;
+            uniform vec3 surfaceColor;
+            uniform vec3 glowColor;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+
+            // Simplex noise function (simplified)
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+            float snoise(vec3 v) {
+                const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+                const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+                vec3 i  = floor(v + dot(v, C.yyy));
+                vec3 x0 = v - i + dot(i, C.xxx);
+                vec3 g = step(x0.yzx, x0.xyz);
+                vec3 l = 1.0 - g;
+                vec3 i1 = min( g.xyz, l.zxy );
+                vec3 i2 = max( g.xyz, l.zxy );
+                vec3 x1 = x0 - i1 + C.xxx;
+                vec3 x2 = x0 - i2 + C.yyy;
+                vec3 x3 = x0 - D.yyy;
+                i = mod289(i);
+                vec4 p = permute( permute( permute( 
+                        i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+                        + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
+                        + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+                float n_ = 0.142857142857;
+                vec3  ns = n_ * D.wyz - D.xzx;
+                vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+                vec4 x_ = floor(j * ns.z);
+                vec4 y_ = floor(j - 7.0 * x_ );
+                vec4 x = x_ *ns.x + ns.yyyy;
+                vec4 y = y_ *ns.x + ns.yyyy;
+                vec4 h = 1.0 - abs(x) - abs(y);
+                vec4 b0 = vec4( x.xy, y.xy );
+                vec4 b1 = vec4( x.zw, y.zw );
+                vec4 s0 = floor(b0)*2.0 + 1.0;
+                vec4 s1 = floor(b1)*2.0 + 1.0;
+                vec4 sh = -step(h, vec4(0.0));
+                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+                vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+                vec3 p0 = vec3(a0.xy,h.x);
+                vec3 p1 = vec3(a0.zw,h.y);
+                vec3 p2 = vec3(a1.xy,h.z);
+                vec3 p3 = vec3(a1.zw,h.w);
+                vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+                p0 *= norm.x;
+                p1 *= norm.y;
+                p2 *= norm.z;
+                p3 *= norm.w;
+                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+                m = m * m;
+                return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
+            }
+
+            void main() {
+                // Dynamic noise pattern
+                float noise = snoise(vec3(vNormal * 2.5 + time * 0.15));
+                
+                // Layer mixing: Core (Dark Gold) -> Surface (Burgamot) -> Flare (Bright Gold)
+                vec3 baseMix = mix(coreColor, surfaceColor, smoothstep(-0.3, 0.2, noise));
+                
+                // Add torque influence to flare intensity
+                float flareThreshold = 0.5 - (torque * 0.2); 
+                vec3 finalColor = mix(baseMix, glowColor, smoothstep(flareThreshold, flareThreshold + 0.2, noise));
+                
+                // Fresnel effect for edge glow
+                vec3 viewDir = normalize(cameraPosition - vec3(0.0));
+                float fresnel = pow(1.0 - dot(vNormal, vec3(0,0,1)), 2.5); 
+                finalColor += glowColor * fresnel * (0.4 + torque * 0.3);
+
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `,
+        transparent: true
+    });
+    
     const sunMesh = new THREE.Mesh(sunGeo, sunMat);
     
-    // Sun Glow
+    // Sun Glow Sprite (Enhanced)
     const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ 
         map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/sprites/glow.png'), 
-        color: 0xffaa00, transparent: true, blending: THREE.AdditiveBlending, opacity: 0.6 
+        color: 0xff4400, 
+        transparent: true, 
+        blending: THREE.AdditiveBlending, 
+        opacity: 0.8 
     }));
-    glowSprite.scale.set(60, 60, 1);
+    glowSprite.scale.set(70, 70, 1);
     sunMesh.add(glowSprite);
+
+    // Corona Mesh (Dynamic Shader)
+    const coronaGeo = new THREE.SphereGeometry(4.5, 64, 64);
+    const coronaMat = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            torque: { value: 0.0 },
+            baseColor: { value: new THREE.Color(0xffaa00) }
+        },
+        vertexShader: `
+            varying vec3 vNormal;
+            varying vec3 vViewPosition;
+            void main() {
+                vNormal = normalize(normalMatrix * normal);
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                vViewPosition = -mvPosition.xyz;
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            uniform float time;
+            uniform float torque;
+            uniform vec3 baseColor;
+            varying vec3 vNormal;
+            varying vec3 vViewPosition;
+
+            void main() {
+                vec3 normal = normalize(vNormal);
+                vec3 viewDir = normalize(vViewPosition);
+                float dotNV = 1.0 - max(0.0, dot(normal, viewDir));
+                float fresnel = pow(dotNV, 2.0);
+                
+                float pulse = sin(time * 3.0) * 0.1 + 0.9;
+                float alpha = fresnel * (0.3 + torque * 0.5) * pulse;
+                
+                gl_FragColor = vec4(baseColor, alpha);
+            }
+        `,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.FrontSide,
+        depthWrite: false
+    });
+    const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
+    sunMesh.add(coronaMesh);
+
+    // Magnetic Field Lines (Swirling Shader)
+    const magGeo = new THREE.SphereGeometry(4.1, 64, 64);
+    const magMat = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            torque: { value: 0.0 },
+            color: { value: new THREE.Color(0xffcc00) }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform float time;
+            uniform float torque;
+            uniform vec3 color;
+            varying vec2 vUv;
+            
+            // Simplex noise for organic swirl
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+            float snoise(vec2 v) {
+                const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+                vec2 i  = floor(v + dot(v, C.yy) );
+                vec2 x0 = v - i + dot(i, C.xx);
+                vec2 i1;
+                i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                vec4 x12 = x0.xyxy + C.xxzz;
+                x12.xy -= i1;
+                i = mod289(i);
+                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                m = m*m ;
+                m = m*m ;
+                vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                vec3 h = abs(x) - 0.5;
+                vec3 ox = floor(x + 0.5);
+                vec3 a0 = x - ox;
+                m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                vec3 g;
+                g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                return 130.0 * dot(m, g);
+            }
+
+            void main() {
+                // Swirling field lines from poles
+                float noise = snoise(vec2(vUv.x * 10.0, vUv.y * 5.0 + time * 0.5));
+                float flow = sin(vUv.x * 60.0 + time * 2.0 + noise * 5.0 * torque);
+                
+                // Constrain to poles
+                float poleMask = smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
+                float lines = smoothstep(0.95, 1.0, flow);
+                
+                gl_FragColor = vec4(color, lines * poleMask * 0.4 * (0.5 + torque));
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+    const magMesh = new THREE.Mesh(magGeo, magMat);
+    sunMesh.add(magMesh);
+
     cursorGroup.add(sunMesh);
 
     // --- Global Sun-Plasma Field ---
@@ -595,11 +840,13 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
 
       // 2. Planet Mesh (PBR + Dynamic Texture)
       const texture = createPlanetTexture(p.name, p.color);
-      const mat = new THREE.MeshStandardMaterial({ 
+      const mat = new THREE.MeshPhongMaterial({ 
           map: texture,
           color: 0xffffff,
-          roughness: 0.7,
-          metalness: 0.1,
+          specular: 0x333333,
+          shininess: 10,
+          emissive: p.color,
+          emissiveIntensity: 0.2
       });
       const geo = new THREE.SphereGeometry(p.size, 64, 64);
       const mesh = new THREE.Mesh(geo, mat);
@@ -633,11 +880,28 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
 
       // 4. Orbital Spin Axis (Static within Tilt Group)
       const axisGeo = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(0, p.size * 2, 0),
-          new THREE.Vector3(0, -p.size * 2, 0)
+          new THREE.Vector3(0, p.size * 2.2, 0),
+          new THREE.Vector3(0, -p.size * 2.2, 0)
       ]);
-      const axisLine = new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.4, transparent: true }));
+      const axisLine = new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.5, transparent: true }));
       tiltGroup.add(axisLine);
+
+      // North Pole Indicator
+      const poleGeo = new THREE.ConeGeometry(p.size * 0.1, p.size * 0.3, 8);
+      const poleMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
+      const poleMesh = new THREE.Mesh(poleGeo, poleMat);
+      poleMesh.position.y = p.size * 2.2;
+      tiltGroup.add(poleMesh);
+
+      // Equator Line (except Saturn which has rings)
+      if (p.name !== 'Saturn') {
+          const eqGeo = new THREE.BufferGeometry().setFromPoints(
+              new THREE.EllipseCurve(0, 0, p.size * 1.2, p.size * 1.2, 0, 2 * Math.PI, false, 0).getPoints(64)
+          );
+          const eqLine = new THREE.Line(eqGeo, new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }));
+          eqLine.rotation.x = Math.PI / 2;
+          tiltGroup.add(eqLine);
+      }
       
       // 5. Instantaneous Orbit Ring (Visual aid, not physical)
       const orbitShape = new THREE.EllipseCurve(0, 0, 10, 10, 0, 2 * Math.PI, false, 0); 
@@ -667,7 +931,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
          pGroup.add(moon);
          
          const mOrbit = new THREE.Line(
-             new THREE.BufferGeometry().setFromPoints(new THREE.EllipseCurve(0,0,4,4,0,2*Math.PI,false,0).getPoints(64)),
+             new THREE.BufferGeometry().setFromPoints(new THREE.EllipseCurve(0,0,6,6,0,2*Math.PI,false,0).getPoints(64)),
              new THREE.LineBasicMaterial({ color: 0x555555, opacity: 0.5, transparent: true })
          );
          mOrbit.rotation.x = Math.PI/2;
@@ -748,6 +1012,36 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
       // Torque Index
       const tIdx = calculateTorqueIndex(renderYear);
       setTorqueIndex(tIdx);
+      
+      // Update Sun Shader Uniforms
+      if (sunMesh.material instanceof THREE.ShaderMaterial) {
+          sunMesh.material.uniforms.time.value = frame * 0.05;
+          sunMesh.material.uniforms.torque.value = tIdx;
+      }
+      
+      // Update Glow Sprite
+      const glow = sunMesh.children[0] as THREE.Sprite;
+      if (glow) {
+          const pulse = Math.sin(frame * 0.05) * 0.1;
+          const baseScale = 70 + (tIdx * 20);
+          glow.scale.set(baseScale + pulse, baseScale + pulse, 1.0);
+          glow.material.opacity = 0.6 + (tIdx * 0.3);
+          glow.material.color.setHSL(0.05 + (tIdx * 0.05), 1.0, 0.5); // Red -> Orange shift
+      }
+
+      // Update Corona Shader
+      const corona = sunMesh.children[1] as THREE.Mesh;
+      if (corona && corona.material instanceof THREE.ShaderMaterial) {
+          corona.material.uniforms.time.value = frame * 0.05;
+          corona.material.uniforms.torque.value = tIdx;
+      }
+
+      // Update Magnetic Field Shader
+      const magField = sunMesh.children[2] as THREE.Mesh;
+      if (magField && magField.material instanceof THREE.ShaderMaterial) {
+          magField.material.uniforms.time.value = frame * 0.02;
+          magField.material.uniforms.torque.value = tIdx;
+      }
 
       // Update Global Plasma Field
       if (plasmaFieldRef.current) {
@@ -818,7 +1112,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
             // Earth-Moon
             if (p.name === 'Earth' && moonRef.current) {
                 const moonAngle = (renderYear / 0.0748) * Math.PI * 2;
-                moonRef.current.position.set(Math.cos(moonAngle) * 4, Math.sin(moonAngle) * 4, 0);
+                moonRef.current.position.set(Math.cos(moonAngle) * 6, Math.sin(moonAngle) * 6, 0);
             }
         }
 
@@ -1064,6 +1358,34 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
                         onChange={(e) => setZScale(parseFloat(e.target.value))}
                         className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
                     />
+                </div>
+                
+                {/* Orbit Controls */}
+                <div className="flex flex-col gap-1 border-l border-white/10 pl-4">
+                    <div className="flex justify-between text-[10px] text-gray-400 uppercase tracking-wider w-32">
+                        <span>Orbit Opacity</span>
+                        <span>{(orbitOpacity * 100).toFixed(0)}%</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        min={0} 
+                        max={1} 
+                        step={0.1}
+                        value={orbitOpacity}
+                        onChange={(e) => setOrbitOpacity(parseFloat(e.target.value))}
+                        className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-400 mb-2"
+                    />
+                    <div className="flex gap-1 flex-wrap w-32">
+                        {PLANETS_DATA.map(p => (
+                            <button
+                                key={p.name}
+                                onClick={() => setVisibleOrbits(prev => ({ ...prev, [p.name]: !prev[p.name] }))}
+                                className={`w-3 h-3 rounded-full transition-all ${visibleOrbits[p.name] ? 'opacity-100 ring-1 ring-white' : 'opacity-30 grayscale'}`}
+                                style={{ backgroundColor: '#' + new THREE.Color(p.color).getHexString() }}
+                                title={`Toggle ${p.name} Orbit`}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

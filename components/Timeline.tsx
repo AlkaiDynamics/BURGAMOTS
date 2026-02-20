@@ -105,12 +105,13 @@ const Timeline: React.FC<TimelineProps> = ({ year, setYear, onEventClick }) => {
   }
 
   const events = [
-    { year: 1619, label: "Kepler (1619)", color: "bg-purple-500" },
-    { year: 1687, label: "Newton (1687)", color: "bg-purple-500" },
+    { year: 1609, label: "Kepler's Laws", color: "bg-purple-500" },
+    { year: 1645, label: "Maunder Min.", color: "bg-blue-400" },
+    { year: 1687, label: "Principia", color: "bg-purple-600" },
     { year: 1859, label: "Carrington", color: "bg-red-500" },
-    { year: 1908, label: "Hale (1908)", color: "bg-blue-500" },
+    { year: 1908, label: "Hale Cycle", color: "bg-blue-500" },
     { year: 1934, label: "Dust Bowl", color: "bg-orange-500" },
-    { year: 2026, label: "Prediction", color: "bg-solar-gold" },
+    { year: 2025, label: "Cycle 25 Peak", color: "bg-solar-gold" },
   ];
 
   return (

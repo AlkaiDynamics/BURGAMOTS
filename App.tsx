@@ -52,12 +52,15 @@ function App() {
   const handleEventJump = (year: number) => {
     // Map years to element IDs
     const yearToId: Record<number, string> = {
-      1619: 'hypothesis', // Kepler
+      1609: 'hypothesis', // Kepler's Laws
+      1619: 'hypothesis', // Kepler (Harmonices Mundi)
+      1645: 'introduction', // Maunder Minimum
       1687: 'hypothesis', // Newton
       1859: 'event-1859', // Carrington
       1908: 'introduction', // Hale
       1934: 'event-1934', // Dust Bowl
-      2026: 'event-2026', // Prediction
+      2025: 'event-2026', // Cycle 25 Peak
+      2026: 'event-2026', // Prediction (Legacy)
     };
 
     const elementId = yearToId[year] || 'methodology';
