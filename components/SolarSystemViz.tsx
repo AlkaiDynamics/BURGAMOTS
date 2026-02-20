@@ -14,8 +14,8 @@ interface SolarSystemVizProps {
 const D2R = Math.PI / 180.0;
 const MIN_YEAR = 1555;
 const MAX_YEAR = 2055;
-const VISUAL_SCALE = 6.0; // Z-axis stretch
-const ORBIT_SCALE = 14.0; // XY-plane scale expanded for better separation
+const BASE_VISUAL_SCALE = 1.0; // Base Z-axis unit
+const ORBIT_SCALE = 22.0; // Increased for better separation
 
 // Resolution for trails - High res for smooth curves
 const TRAIL_STEPS = 60000; 
@@ -371,11 +371,14 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
   const [showTimeMenu, setShowTimeMenu] = useState(false);
   const [pinnData, setPinnData] = useState<{label: string, logic: string} | null>(null);
   const [torqueIndex, setTorqueIndex] = useState(0);
+  const [zScale, setZScale] = useState(6.0);
+  const zScaleRef = useRef(6.0);
   
   const planetsRef = useRef<THREE.Group[]>([]);
   const fieldsRef = useRef<THREE.Group[]>([]);
   const plasmaFieldRef = useRef<THREE.Group>(null);
   const bgGroupRef = useRef<THREE.Group>(null);
+  const timeAxisGroupRef = useRef<THREE.Group>(null);
   const moonRef = useRef<THREE.Mesh>(null);
   const controlsRef = useRef<OrbitControls>(null);
   const timeStepRef = useRef(TIME_STEPS[4]);
@@ -388,6 +391,13 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
   useEffect(() => {
     timeStepRef.current = TIME_STEPS[timeStepIndex];
   }, [timeStepIndex]);
+
+  useEffect(() => {
+    zScaleRef.current = zScale;
+    if (timeAxisGroupRef.current) {
+        timeAxisGroupRef.current.scale.z = zScale;
+    }
+  }, [zScale]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -470,20 +480,27 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
     scene.add(ambientLight);
 
+    // --- Time Axis Group (Scalable Z) ---
+    const timeAxisGroup = new THREE.Group();
+    timeAxisGroup.scale.z = zScaleRef.current;
+    scene.add(timeAxisGroup);
+    // @ts-ignore
+    timeAxisGroupRef.current = timeAxisGroup;
+
     // --- Sun Spine ---
     const sunPoints: THREE.Vector3[] = [];
     const sunSteps = 10000;
     for (let i = 0; i <= sunSteps; i++) {
         const y = MIN_YEAR + (i / sunSteps) * (MAX_YEAR - MIN_YEAR);
         const sunPos = getSunBarycentricOffset(y);
-        const z = (y - MIN_YEAR) * VISUAL_SCALE;
+        const z = (y - MIN_YEAR) * BASE_VISUAL_SCALE;
         sunPoints.push(new THREE.Vector3(sunPos.x, sunPos.y, z));
     }
     const spineCurve = new THREE.CatmullRomCurve3(sunPoints);
     const spineGeo = new THREE.BufferGeometry().setFromPoints(spineCurve.getPoints(3000));
     const spineMat = new THREE.LineBasicMaterial({ color: 0xffcc00, transparent: true, opacity: 0.5, linewidth: 1 });
     const spineLine = new THREE.Line(spineGeo, spineMat);
-    scene.add(spineLine);
+    timeAxisGroup.add(spineLine);
 
     // --- Planetary Trails ---
     PLANETS_DATA.forEach(planet => {
@@ -499,7 +516,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
         const realDist = Math.sqrt(helio.x*helio.x + helio.y*helio.y);
         const visualRadius = Math.pow(realDist, 0.45) * ORBIT_SCALE;
         
-        const z = (y - MIN_YEAR) * VISUAL_SCALE;
+        const z = (y - MIN_YEAR) * BASE_VISUAL_SCALE;
         
         points.push(new THREE.Vector3(
             sunOffset.x + Math.cos(angle) * visualRadius, 
@@ -516,7 +533,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
           opacity: opacity,
           depthWrite: true
       });
-      scene.add(new THREE.Line(geometry, material));
+      timeAxisGroup.add(new THREE.Line(geometry, material));
     });
 
     const cursorGroup = new THREE.Group();
@@ -675,11 +692,11 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
 
     // --- Markers ---
     const markerGroup = new THREE.Group();
-    scene.add(markerGroup);
+    timeAxisGroup.add(markerGroup);
     const fontLoader = new FontLoader();
     fontLoader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
       PINN_EVENTS.forEach(ev => {
-        const z = (ev.year - MIN_YEAR) * VISUAL_SCALE;
+        const z = (ev.year - MIN_YEAR) * BASE_VISUAL_SCALE;
         const sunPos = getSunBarycentricOffset(ev.year);
         
         const textGeo = new TextGeometry(`${ev.year}`, { font, size: 4, height: 0.2 });
@@ -721,7 +738,7 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
 
       // Positions
       const sunOffset = getSunBarycentricOffset(renderYear);
-      const z = (renderYear - MIN_YEAR) * VISUAL_SCALE;
+      const z = (renderYear - MIN_YEAR) * BASE_VISUAL_SCALE * zScaleRef.current;
       const sunVec = new THREE.Vector3(sunOffset.x, sunOffset.y, z);
 
       // Sun & Light
@@ -1021,16 +1038,33 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
                 </div>
             </div>
             
-            <div className="bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/5 pointer-events-auto transition-opacity duration-300 opacity-90 hover:opacity-100">
-                <input 
-                    type="range" 
-                    min={MIN_YEAR} 
-                    max={MAX_YEAR} 
-                    step={0.1}
-                    value={year}
-                    onChange={(e) => onYearChange && onYearChange(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-solar-gold"
-                />
+            <div className="flex gap-4 items-center bg-black/40 backdrop-blur-sm p-2 rounded-xl border border-white/5 pointer-events-auto transition-opacity duration-300 opacity-90 hover:opacity-100">
+                <div className="flex-1">
+                    <input 
+                        type="range" 
+                        min={MIN_YEAR} 
+                        max={MAX_YEAR} 
+                        step={0.1}
+                        value={year}
+                        onChange={(e) => onYearChange && onYearChange(parseFloat(e.target.value))}
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-solar-gold"
+                    />
+                </div>
+                <div className="w-32 flex flex-col gap-1">
+                     <div className="flex justify-between text-[10px] text-gray-400 uppercase tracking-wider">
+                        <span>Z-Scale</span>
+                        <span>{zScale.toFixed(1)}x</span>
+                     </div>
+                     <input 
+                        type="range" 
+                        min={1} 
+                        max={20} 
+                        step={0.5}
+                        value={zScale}
+                        onChange={(e) => setZScale(parseFloat(e.target.value))}
+                        className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
+                    />
+                </div>
             </div>
         </div>
     </div>

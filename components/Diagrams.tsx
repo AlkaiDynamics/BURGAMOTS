@@ -1,5 +1,3 @@
-import React from 'react';
-
 // --- System Architecture Diagram ---
 export const SystemArchDiagram = () => (
     <svg 
