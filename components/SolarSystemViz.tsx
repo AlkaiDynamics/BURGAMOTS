@@ -659,9 +659,9 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
         uniforms: {
             time: { value: 0 },
             torque: { value: 0.0 },
-            coreColor: { value: new THREE.Color(0x332200) }, // Dark Golden Heart
-            surfaceColor: { value: new THREE.Color(0x550011) }, // Deep Burgamot
-            glowColor: { value: new THREE.Color(0xffcc00) } // Bright Gold
+            coreColor: { value: new THREE.Color(0x553300) }, // Richer Dark Gold Heart
+            surfaceColor: { value: new THREE.Color(0x4a0404) }, // Deep Burgamot Surface
+            glowColor: { value: new THREE.Color(0xffaa00) } // Bright Gold Flares
         },
         vertexShader: `
             varying vec2 vUv;
@@ -736,17 +736,30 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
                 // Dynamic noise pattern
                 float noise = snoise(vec3(vNormal * 2.5 + time * 0.15));
                 
-                // Layer mixing: Core (Dark Gold) -> Surface (Burgamot) -> Flare (Bright Gold)
-                vec3 baseMix = mix(coreColor, surfaceColor, smoothstep(-0.3, 0.2, noise));
+                // INVERTED MIX: Core is the "base" (low noise), Surface is the "crust" (high noise)
+                // We want the heart (core) to be underneath.
                 
-                // Add torque influence to flare intensity
-                float flareThreshold = 0.5 - (torque * 0.2); 
-                vec3 finalColor = mix(baseMix, glowColor, smoothstep(flareThreshold, flareThreshold + 0.2, noise));
+                // 1. Base Layer: Dark Golden Heart (Core)
+                vec3 finalColor = coreColor;
                 
-                // Fresnel effect for edge glow
+                // 2. Surface Layer: Burgamot Crust
+                // Use noise to create "cracks" where the core shows through
+                float crustMask = smoothstep(-0.2, 0.3, noise);
+                finalColor = mix(finalColor, surfaceColor, crustMask);
+                
+                // 3. Flare Layer: Bright Gold Eruptions
+                // These happen at the highest noise peaks or specific torque-driven areas
+                float flareThreshold = 0.6 - (torque * 0.3); 
+                float flareMask = smoothstep(flareThreshold, flareThreshold + 0.2, noise);
+                finalColor = mix(finalColor, glowColor, flareMask);
+                
+                // 4. Fresnel Glow: Burgamot-Gold Rim
                 vec3 viewDir = normalize(cameraPosition - vec3(0.0));
-                float fresnel = pow(1.0 - dot(vNormal, vec3(0,0,1)), 2.5); 
-                finalColor += glowColor * fresnel * (0.4 + torque * 0.3);
+                float fresnel = pow(1.0 - dot(vNormal, vec3(0,0,1)), 3.0); 
+                
+                // Rim color mixes from Burgamot to Gold based on torque
+                vec3 rimColor = mix(surfaceColor * 2.0, glowColor, 0.5 + torque * 0.5);
+                finalColor += rimColor * fresnel * (0.6 + torque * 0.4);
 
                 gl_FragColor = vec4(finalColor, 1.0);
             }
@@ -909,6 +922,44 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
     // @ts-ignore
     plasmaFieldRef.current = plasmaGroup;
     cursorGroup.add(plasmaGroup);
+
+    // --- Main Asteroid Belt ---
+    const asteroidCount = 1500;
+    const asteroidGeo = new THREE.DodecahedronGeometry(0.1, 0); // Low poly rock
+    const asteroidMat = new THREE.MeshPhongMaterial({ color: 0x888888, flatShading: true });
+    const asteroidMesh = new THREE.InstancedMesh(asteroidGeo, asteroidMat, asteroidCount);
+    
+    const dummy = new THREE.Object3D();
+    const asteroidData: { angle: number, dist: number, speed: number, yOffset: number }[] = [];
+
+    for (let i = 0; i < asteroidCount; i++) {
+        // Random distance between Mars (1.5 AU) and Jupiter (5.2 AU)
+        // Main belt is roughly 2.2 to 3.2 AU
+        let dist = 2.2 + Math.random() * 1.0;
+        
+        // Kirkwood Gaps (Simple exclusion zones)
+        // 3:1 resonance ~2.5 AU, 5:2 ~2.82 AU
+        if (Math.abs(dist - 2.5) < 0.05) dist += 0.1; 
+        if (Math.abs(dist - 2.82) < 0.05) dist -= 0.1;
+
+        const angle = Math.random() * Math.PI * 2;
+        const yOffset = (Math.random() - 0.5) * 0.5; // Slight inclination spread
+        const scale = 0.5 + Math.random() * 1.5;
+        
+        // Orbital speed (Kepler's 3rd law approx: v ~ 1/sqrt(r))
+        const speed = 0.5 / Math.sqrt(dist); 
+
+        dummy.position.set(Math.cos(angle) * dist * ORBIT_SCALE, yOffset, Math.sin(angle) * dist * ORBIT_SCALE);
+        dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        dummy.scale.set(scale, scale, scale);
+        dummy.updateMatrix();
+        asteroidMesh.setMatrixAt(i, dummy.matrix);
+        
+        asteroidData.push({ angle, dist, speed, yOffset });
+    }
+    asteroidMesh.instanceMatrix.needsUpdate = true;
+    asteroidMesh.userData = { isAsteroidBelt: true, data: asteroidData };
+    cursorGroup.add(asteroidMesh);
 
     // --- Planets ---
     planetsRef.current = [];
@@ -1321,6 +1372,43 @@ const SolarSystemViz: React.FC<SolarSystemVizProps> = ({ year, onYearChange }) =
                   });
               });
           });
+      });
+
+      // Update Asteroid Belt
+      cursorGroup.children.forEach(child => {
+          if (child.userData.isAsteroidBelt) {
+              const mesh = child as THREE.InstancedMesh;
+              const data = mesh.userData.data;
+              const dummy = new THREE.Object3D();
+              
+              for (let i = 0; i < mesh.count; i++) {
+                  const d = data[i];
+                  // Update angle based on speed and time step
+                  // We use a simplified time step here for visual smoothness
+                  d.angle += d.speed * 0.002; 
+                  
+                  const r = d.dist * ORBIT_SCALE;
+                  dummy.position.set(Math.cos(d.angle) * r, d.yOffset, Math.sin(d.angle) * r);
+                  
+                  // Rotate asteroid itself
+                  dummy.rotation.set(
+                      Math.sin(frame * 0.01 + i), 
+                      Math.cos(frame * 0.01 + i), 
+                      frame * 0.01
+                  );
+                  
+                  // Retrieve scale from current matrix to preserve it
+                  const mat = new THREE.Matrix4();
+                  mesh.getMatrixAt(i, mat);
+                  const scale = new THREE.Vector3();
+                  mat.decompose(new THREE.Vector3(), new THREE.Quaternion(), scale);
+                  dummy.scale.copy(scale);
+                  
+                  dummy.updateMatrix();
+                  mesh.setMatrixAt(i, dummy.matrix);
+              }
+              mesh.instanceMatrix.needsUpdate = true;
+          }
       });
 
       // Planets & Fields Animation
