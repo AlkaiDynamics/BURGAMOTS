@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/analysis-config.schema.json",
+  "title":"AnalysisConfig",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","id","hypothesisId","estimand","outcome","unit","independentUnit","primaryComparison","nullControl","estimator","test","uncertaintyMethod","dependenceHandling","multiplicityPolicy","stoppingRule","exclusionPolicy","sensitivityPlan","analysisStatus"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"id":{"type":"string","minLength":1},"hypothesisId":{"type":"string","minLength":1},
+    "estimand":{"type":["string","null"]},"outcome":{"type":["string","null"]},"unit":{"type":["string","null"]},"independentUnit":{"type":["string","null"]},
+    "primaryComparison":{"type":["string","null"]},"nullControl":{"type":["string","null"]},"estimator":{"type":["string","null"]},"test":{"type":["string","null"]},
+    "uncertaintyMethod":{"type":["string","null"]},"dependenceHandling":{"type":["string","null"]},"multiplicityPolicy":{"type":["string","null"]},
+    "stoppingRule":{"type":["string","null"]},"exclusionPolicy":{"type":["string","null"]},"sensitivityPlan":{"type":"array","items":{"type":"string"}},
+    "analysisStatus":{"enum":["BLOCKED","EXPLORATORY","CONFIRMATORY"]}
+  }
+}
