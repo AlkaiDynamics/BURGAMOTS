@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/analysis-result.schema.json",
+  "title":"AnalysisResult",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","resultId","hypothesisId","status","fixture","datasetManifestId","evaluationBoundaryId","analysisConfigId","runMetadataId","method","seed","sample","estimate","uncertainty","pValue","multiplicity","limitations","evidenceRefs","reviewEvidenceRefs"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"resultId":{"type":"string","minLength":1},"hypothesisId":{"type":"string","minLength":1},
+    "status":{"enum":["BLOCKED","ILLUSTRATIVE","EXPLORATORY","NEGATIVE_NULL_FAVORING","EVALUATED","VALIDATED","UNRESOLVED"]},
+    "fixture":{"type":"boolean"},"datasetManifestId":{"type":["string","null"]},"evaluationBoundaryId":{"type":["string","null"]},
+    "analysisConfigId":{"type":["string","null"]},"runMetadataId":{"type":["string","null"]},"method":{"type":["string","null"]},"seed":{"type":["integer","null"]},
+    "sample":{"type":"object","additionalProperties":false,"required":["n","independentN"],"properties":{"n":{"type":["integer","null"]},"independentN":{"type":["integer","null"]}}},
+    "estimate":{"type":["number","null"]},"uncertainty":{"type":["object","null"]},"pValue":{"type":["number","null"]},"multiplicity":{"type":["object","null"]},
+    "limitations":{"type":"array","items":{"type":"string"}},"evidenceRefs":{"type":"array","items":{"type":"string"}},"reviewEvidenceRefs":{"type":"array","items":{"type":"string"}}
+  }
+}
