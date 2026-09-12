@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/evaluation-boundary.schema.json",
+  "title":"EvaluationBoundary",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","id","constructionRule","trainingIds","evaluationIds","controlIds","groupedUnits","temporalPolicy","seed","boundaryHash","createdBeforeAnalysis","immutableAfterResult","leakageChecks","historicalLeakageStatus"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"id":{"type":"string","minLength":1},"constructionRule":{"type":"string","minLength":1},
+    "trainingIds":{"type":"array","items":{"type":"string"},"uniqueItems":true},"evaluationIds":{"type":"array","items":{"type":"string"},"uniqueItems":true},"controlIds":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "groupedUnits":{"type":"array"},"temporalPolicy":{"type":["string","null"]},"seed":{"type":["integer","null"]},"boundaryHash":{"type":["string","null"]},
+    "createdBeforeAnalysis":{"type":"boolean"},"immutableAfterResult":{"type":"boolean"},"leakageChecks":{"type":"array"},"historicalLeakageStatus":{"enum":["UNRESOLVED"]}
+  }
+}
