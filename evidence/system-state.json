@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0.0",
+  "scientificExecution": "BLOCKED",
+  "blockedBy": ["UD-001","UD-002","UD-003","UD-004"],
+  "historicalLeakageStatus": "UNRESOLVED",
+  "historicalLeakageNote": "Successor controls apply only to successor runs and do not establish that the frozen historical pipeline was leakage-free."
+}
