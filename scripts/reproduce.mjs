@@ -1,0 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { loadResultManifest } from '../evidence/resultLoader.js';
+const record = JSON.parse(readFileSync('evidence/results/original-purpose-blocked.json','utf8'));
+const loaded = loadResultManifest(record);
+if (!loaded.ok) throw new Error(loaded.errors.join('; '));
+if (loaded.claimStatus.state !== 'BLOCKED') throw new Error(`Expected BLOCKED, got ${loaded.claimStatus.state}`);
+if (loaded.result.estimate !== null || loaded.result.pValue !== null) throw new Error('Blocked reproduction must not invent scientific values.');
+console.log('Integrity reproduction PASS.');
+console.log('Scientific evaluation: BLOCKED pending UD-001, UD-002, UD-003, and UD-004.');
+console.log('This command reproduces evidence-integrity state only; it does not execute a BURGAMOTS scientific experiment.');
