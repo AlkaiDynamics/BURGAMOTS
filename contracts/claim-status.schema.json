@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/claim-status.schema.json",
+  "title":"ClaimStatus",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","claimId","state","rationale","evidenceRefs","limitations","allowedPhrases","forbiddenPhrases"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"claimId":{"type":"string","minLength":1},
+    "state":{"enum":["BLOCKED","ILLUSTRATIVE","EXPLORATORY","NEGATIVE_NULL_FAVORING","EVALUATED","VALIDATED","UNRESOLVED"]},
+    "rationale":{"type":"string","minLength":1},"evidenceRefs":{"type":"array","items":{"type":"string"}},"limitations":{"type":"array","items":{"type":"string"}},
+    "allowedPhrases":{"type":"array","items":{"type":"string"}},"forbiddenPhrases":{"type":"array","items":{"type":"string"}}
+  }
+}
