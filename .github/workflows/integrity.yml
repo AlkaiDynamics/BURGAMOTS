@@ -1,0 +1,40 @@
+name: evidence-integrity
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [refactor/evidence-integrity]
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Harness rejects intentionally invalid fixture
+        shell: bash
+        run: |
+          if npm run audit:harness-invalid; then
+            echo "ERROR: intentionally invalid fixture was accepted"
+            exit 1
+          fi
+          echo "PASS: intentionally invalid fixture produced nonzero exit"
+      - name: Verify propagates child failure
+        shell: bash
+        run: |
+          if BURGAMOTS_VERIFY_SELFTEST_FAIL=1 npm run verify; then
+            echo "ERROR: verify swallowed an injected failure"
+            exit 1
+          fi
+          echo "PASS: verify propagated injected failure"
+      - name: Typecheck
+        run: npm run typecheck
+      - name: RED tests / successor tests
+        run: npm test
+      - name: Build
+        run: npm run build
