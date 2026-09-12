@@ -1,5 +1,10 @@
 import { spawnSync } from 'node:child_process';
 
+if (process.env.BURGAMOTS_VERIFY_SELFTEST_FAIL === '1') {
+  console.error('[verify] intentional self-test failure injected.');
+  process.exit(17);
+}
+
 const commands = [
   ['npm', ['run', 'typecheck']],
   ['npm', ['test']],
