@@ -5,12 +5,13 @@ import { loadResultManifest } from '../evidence/resultLoader.js';
 test('blocked result preserves null scientific values', () => {
   const loaded = loadResultManifest({
     schemaVersion: '1.0.0', resultId: 'blocked-1', hypothesisId: 'burgamots-original-purpose', status: 'BLOCKED',
-    datasetManifestId: null, evaluationBoundaryId: null, analysisConfigId: null, runMetadataId: null,
+    fixture: false, datasetManifestId: null, evaluationBoundaryId: null, analysisConfigId: null, runMetadataId: null,
     method: null, seed: null, sample: { n: null, independentN: null }, estimate: null, uncertainty: null,
     pValue: null, multiplicity: null, limitations: ['Scientific execution remains blocked.'], evidenceRefs: [], reviewEvidenceRefs: []
   });
   assert.equal(loaded.ok, true);
   assert.equal(loaded.result.estimate, null);
+  assert.equal(loaded.result.pValue, null);
   assert.equal(loaded.claimStatus.state, 'BLOCKED');
 });
 
@@ -34,6 +35,17 @@ test('result cannot attach evidence to a different hypothesis', () => {
   });
   assert.equal(loaded.ok, false);
   assert.ok(loaded.errors.some((error) => /hypothesis/i.test(error)));
+});
+
+test('evaluated result with unknown evidence references fails closed', () => {
+  const loaded = loadResultManifest({
+    schemaVersion: '1.0.0', resultId: 'unknown-refs', hypothesisId: 'burgamots-original-purpose', status: 'EVALUATED',
+    fixture: false, datasetManifestId: 'missing-dataset', evaluationBoundaryId: 'missing-boundary', analysisConfigId: 'missing-analysis', runMetadataId: 'missing-run',
+    method: 'test', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['hypothesis:burgamots-original-purpose'], reviewEvidenceRefs: []
+  });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /unknown reference/i.test(error)));
 });
 
 test('scientific executor cannot self-assign validation without review evidence', () => {
