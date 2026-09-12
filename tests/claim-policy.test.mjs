@@ -20,6 +20,35 @@ test('evaluated status requires the complete evidence chain', () => {
   assert.match(status.rationale, /evidence chain/i);
 });
 
+test('fixture cannot enter an empirical evidence state', () => {
+  const status = deriveClaimStatus({
+    resultId: 'fixture', status: 'EVALUATED', fixture: true,
+    datasetManifestId: 'd', evaluationBoundaryId: 'b', analysisConfigId: 'a', runMetadataId: 'r',
+    evidenceRefs: [], reviewEvidenceRefs: [], limitations: []
+  });
+  assert.equal(status.state, EvidenceState.BLOCKED);
+  assert.match(status.rationale, /fixture/i);
+});
+
+test('inferential p-value without analysis metadata fails closed', () => {
+  const status = deriveClaimStatus({
+    resultId: 'p-without-analysis', status: 'EXPLORATORY', fixture: false,
+    pValue: 0.01, analysisConfigId: null, evidenceRefs: [], reviewEvidenceRefs: [], limitations: []
+  });
+  assert.equal(status.state, EvidenceState.BLOCKED);
+  assert.match(status.rationale, /analysis/i);
+});
+
+test('validated status cannot be self-assigned without review evidence', () => {
+  const status = deriveClaimStatus({
+    resultId: 'self-validation', status: 'VALIDATED', fixture: false,
+    datasetManifestId: 'd', evaluationBoundaryId: 'b', analysisConfigId: 'a', runMetadataId: 'r',
+    evidenceRefs: [], reviewEvidenceRefs: [], limitations: []
+  });
+  assert.equal(status.state, EvidenceState.BLOCKED);
+  assert.match(status.rationale, /review/i);
+});
+
 test('negative/null-favoring result remains negative rather than success', () => {
   const result = {
     resultId: 'negative-test', hypothesisId: 'h-original', status: 'NEGATIVE_NULL_FAVORING',
