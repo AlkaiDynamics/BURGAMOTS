@@ -60,6 +60,11 @@ const evidenceChainComplete = (result) => Boolean(
   result?.runMetadataId
 );
 
+const hasInferentialOutput = (result) =>
+  result?.pValue !== null && result?.pValue !== undefined ||
+  result?.uncertainty !== null && result?.uncertainty !== undefined ||
+  result?.multiplicity !== null && result?.multiplicity !== undefined;
+
 export function deriveClaimStatus(result) {
   const requested = result?.status ?? EvidenceState.BLOCKED;
   let state = requested;
@@ -71,6 +76,9 @@ export function deriveClaimStatus(result) {
   } else if (result?.fixture === true && [EvidenceState.EXPLORATORY, EvidenceState.EVALUATED, EvidenceState.VALIDATED, EvidenceState.NEGATIVE_NULL_FAVORING].includes(requested)) {
     state = EvidenceState.BLOCKED;
     rationale = 'Fixture data cannot enter an empirical evidence state.';
+  } else if (hasInferentialOutput(result) && !result?.analysisConfigId) {
+    state = EvidenceState.BLOCKED;
+    rationale = 'Inferential output requires analysis metadata; p-values, uncertainty, and multiplicity fields cannot stand alone.';
   } else if ([EvidenceState.EVALUATED, EvidenceState.VALIDATED].includes(requested) && !evidenceChainComplete(result)) {
     state = EvidenceState.BLOCKED;
     rationale = 'Requested empirical state is missing the complete evidence chain: dataset, evaluation boundary, analysis configuration, and run metadata are required.';
