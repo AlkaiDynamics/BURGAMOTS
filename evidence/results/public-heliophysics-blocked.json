@@ -5,6 +5,7 @@
   "status": "BLOCKED",
   "fixture": false,
   "datasetManifestId": null,
+  "datasetManifestHash": null,
   "evaluationBoundaryId": null,
   "analysisConfigId": null,
   "runMetadataId": null,
