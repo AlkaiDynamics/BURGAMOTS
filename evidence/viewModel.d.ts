@@ -21,8 +21,8 @@ export interface EvidenceViewModel {
 export interface EvidenceViewModelInput {
   hypothesisSchema: unknown;
   resultSchema: unknown;
-  hypothesis: Record<string, unknown>;
-  result: Record<string, unknown>;
+  hypothesis: unknown;
+  result: unknown;
 }
 
 export function createEvidenceViewModel(input: EvidenceViewModelInput): EvidenceViewModel;
