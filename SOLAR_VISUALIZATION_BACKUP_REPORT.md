@@ -6,6 +6,7 @@ Frozen commit: `8a9029b69b107d4230c9f053b4c8ef545a99e90e`
 Frozen Git blob SHA-1: `e56d956cf927c56b24543259ccee9475ab41d6b6`
 Frozen file size: `71298` bytes
 Protected backup path: `protected/solar-visualization-frozen-8a9029b6.tsx`
+Protected backup SHA-256: `4d0efb7144d437f66625bdaadd357b8e8e76c605e9870164f15eff81ee820180`
 
 ## Source provenance
 
@@ -56,7 +57,7 @@ The protected source is retained for possible AYLI/product reuse. **BURGAMOTS is
 
 The archive itself must not be simplified, reconstructed, or semantically rewritten. A future AYLI migration should use this exact protected source.
 
-## Test coverage
+## Test and executable verification
 
 `tests/solar-visualization-preservation.test.mjs` verifies:
 
@@ -65,11 +66,14 @@ The archive itself must not be simplified, reconstructed, or semantically rewrit
 - The scientific evidence pipeline does not depend on `SolarSystemViz` or its synthetic cycle driver.
 - Archive preservation does not force the visualization to remain mounted in BURGAMOTS.
 
-## SHA-256 verification status
+`scripts/audit-solar-backup.mjs` independently hashes the protected bytes during verification. The Vercel execution for commit `ab623ac265e14842fe179fce5a315fd66163caff` recorded:
 
-Exact byte identity is established by reusing the frozen Git blob object directly. A separate SHA-256 of the file contents is **not yet recorded** because the current execution environment cannot materialize the connector-fetched Git blob into the local runtime and the GitHub Actions runner has not executed repository jobs. This is a verification-tooling limitation, not a source-availability limitation.
+```text
+audit:solar-backup PASS — exact frozen Git blob e56d956cf927c56b24543259ccee9475ab41d6b6
+audit:solar-backup SHA-256 4d0efb7144d437f66625bdaadd357b8e8e76c605e9870164f15eff81ee820180
+```
 
-The repository must not invent a SHA-256 value. When an execution path becomes available, the hash audit should compute SHA-256 for the frozen source and protected archive and confirm equality.
+This SHA-256 is tool-confirmed from the archived file bytes; it was not inferred or reconstructed.
 
 ## Preservation conclusion
 
