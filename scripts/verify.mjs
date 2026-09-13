@@ -14,6 +14,7 @@ const commands = [
   ['npm', ['run', 'audit:provenance']],
   ['npm', ['run', 'audit:leakage']],
   ['npm', ['run', 'audit:claims']],
+  ['npm', ['run', 'audit:env']],
   ['npm', ['run', 'audit:solar-backup']],
   ['npm', ['run', 'reproduce']],
 ];
