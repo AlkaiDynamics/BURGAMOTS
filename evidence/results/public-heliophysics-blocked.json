@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "resultId": "public-heliophysics-blocked",
+  "hypothesisId": "public-heliophysics-proposal",
+  "status": "BLOCKED",
+  "fixture": false,
+  "datasetManifestId": null,
+  "evaluationBoundaryId": null,
+  "analysisConfigId": null,
+  "runMetadataId": null,
+  "method": null,
+  "seed": null,
+  "sample": { "n": null, "independentN": null },
+  "estimate": null,
+  "uncertainty": null,
+  "pValue": null,
+  "multiplicity": null,
+  "limitations": [
+    "Scientific execution remains blocked pending an approved target, data source, null/control family, evaluation policy, and physical-mechanism specification."
+  ],
+  "evidenceRefs": ["hypothesis:public-heliophysics-proposal"],
+  "reviewEvidenceRefs": []
+}
