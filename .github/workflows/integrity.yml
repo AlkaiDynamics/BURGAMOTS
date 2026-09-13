@@ -34,7 +34,9 @@ jobs:
           echo "PASS: verify propagated injected failure"
       - name: Typecheck
         run: npm run typecheck
-      - name: RED tests / successor tests
+      - name: Tests
         run: npm test
       - name: Build
         run: npm run build
+      - name: Full integrity verification
+        run: npm run verify
