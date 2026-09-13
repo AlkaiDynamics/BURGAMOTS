@@ -23,6 +23,7 @@ export interface EvidenceViewModelInput {
   resultSchema: unknown;
   hypothesis: unknown;
   result: unknown;
+  registry?: unknown;
 }
 
 export function createEvidenceViewModel(input: EvidenceViewModelInput): EvidenceViewModel;
