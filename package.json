@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/prebuild-integrity.mjs",
     "build": "vite build",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
