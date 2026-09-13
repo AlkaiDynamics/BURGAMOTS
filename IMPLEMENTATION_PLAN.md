@@ -6,7 +6,8 @@
 - Successor: `refactor/evidence-integrity`
 - Audit: `audit/2026-09-12/`
 - Reasoning: `REFRACTOR_REASONING.md`
-- Protected solar source: `components/SolarSystemViz.tsx` at frozen blob `e56d956cf927c56b24543259ccee9475ab41d6b6`
+- Frozen solar source blob: `e56d956cf927c56b24543259ccee9475ab41d6b6`
+- Protected archive: `protected/solar-visualization-frozen-8a9029b6.tsx`
 
 ## Discovery inventory
 
@@ -33,24 +34,18 @@
 
 `UD-001` target/unit/estimand; `UD-002` authoritative data; `UD-003` primary null/control family; `UD-004` evaluation/confirmatory policy. The real scientific experiment remains blocked while any is unresolved.
 
-## Protected product constraint — solar visualization
+## Solar visualization archive policy
 
-`SolarSystemViz.tsx` and all planetary alignment/orbital-position logic are protected product functionality. Preserve the existing model, planetary data, date/year controls, Three.js rendering, animation, helical/orbital visualization, solar visual effects, and user-visible alignment behavior.
+The exact frozen `SolarSystemViz.tsx` implementation is preserved at `protected/solar-visualization-frozen-8a9029b6.tsx` using the same Git blob as the audited baseline. It is retained as protected source for possible AYLI/product reuse.
 
-Do **not** replace, simplify, remove, or materially alter:
+This archive constraint is intentionally separate from the active BURGAMOTS application. BURGAMOTS is **not required** to keep `SolarSystemViz.tsx` mounted or to preserve the historical visualization inside the current paper/app. The active application may retain or remove it according to evidence-integrity needs, provided that:
 
-- `PLANETS_DATA` or its orbital elements.
-- `solveKepler`, `getPlanetPositionHeliocentric`, or `getSunBarycentricOffset`.
-- The barycentric visual exaggeration or nonlinear display transformations.
-- The date/year controls or timeline interaction.
-- The Three.js scene, helical tunnel, orbital trails, shaders, glow, corona, magnetic-field effect, plasma-field effect, or animation merely because some effects are illustrative.
-- The existing cycle-driven visual behavior.
+- The protected archive remains byte-identical to the frozen source.
+- The scientific evidence pipeline does not depend on the archived visualization.
+- No active claim treats the synthetic cycle driver as measured physical torque or empirical evidence.
+- Removal from the active app does not delete or rewrite the protected archive.
 
-Only narrowly scoped labels, disclosures, status metadata, or tests may be changed in this integrity phase to distinguish astronomical/educational visualization from empirical solar forecasting or physical-torque validation. Any proposed change to orbital calculations, planetary data, rendering behavior, or visual output requires explicit user authorization.
-
-The synthetic periodic visual driver may remain for novelty and visual behavior. It must be described as synthetic/illustrative rather than measured physical torque and must be blocked from empirical result/evidence manifests.
-
-The protected exact frozen source is stored at `protected/solar-visualization-frozen-8a9029b6.tsx`. Preservation status is documented in `SOLAR_VISUALIZATION_BACKUP_REPORT.md` and guarded by `tests/solar-visualization-preservation.test.mjs`.
+Do not replace the protected archive with a reconstructed or simplified version. Any future migration of the visualization into AYLI should use the protected source, not the audit narrative.
 
 ## Selected architecture
 
@@ -66,17 +61,16 @@ frozen audit
   → React UI
 ```
 
-The protected solar visualization is a parallel product feature, not an empirical-result source:
+The archived solar visualization is outside the evidence pipeline:
 
 ```text
-protected solar visualization
-  → modeled/illustrative display only
-  ├─ planetary alignment/date exploration
-  ├─ preserved visual effects
-  └─ explicit semantic disclosure
+protected solar archive (AYLI-bound/product preservation)
+  └─ no scientific claim authority
 
 scientific evidence pipeline
-  → separate contracts/provenance/boundaries/results
+  → contracts/provenance/boundaries/results
+  → derived view model
+  → active BURGAMOTS UI
 ```
 
 No real dataset, statistical method, physical torque model, DeepXDE runtime, or scientific result is selected in this phase.
@@ -86,9 +80,9 @@ No real dataset, statistical method, physical torque model, DeepXDE runtime, or 
 1. **Contracts** — Add language-neutral JSON Schemas for hypothesis, dataset, transformation, boundary, leakage check, analysis config, run metadata, result and claim status; add fail-closed runtime validation.
 2. **Claim policy** — Centralize `BLOCKED`, `ILLUSTRATIVE`, `EXPLORATORY`, `NEGATIVE_NULL_FAVORING`, `EVALUATED`, `VALIDATED`, `UNRESOLVED`; prohibit unsupported promotion; isolate original-purpose and public-heliophysics IDs.
 3. **Provenance/boundary/executor** — Validate hashes/reference chains and boundary invariants; create executor interface only. Historical leakage remains unresolved.
-4. **Protected solar visualization** — Preserve `SolarSystemViz.tsx` behavior and source-level orbital/rendering machinery. Add only non-destructive semantic disclosure around the existing synthetic cycle/forecast language. Do not rebuild or replace the component. The synthetic cycle driver may continue to drive the same visual effects, but it cannot feed empirical result manifests or be presented as measured physical torque.
-5. **UI** — Replace active hardcoded validation/performance presentation outside the protected visualization with manifest-derived blocked/illustrative evidence panels. Historical result components may be removed from active scientific-claim paths while their source remains preserved. Any change involving `SolarSystemViz.tsx` is constrained by the protected-product section above.
-6. **Verification harness** — Use Node’s built-in test runner and repository scripts; add contract/policy/provenance/boundary/fixture/claim tests, `reproduce`, fail-closed `verify`, and solar-visualization preservation regression tests. No scientific dependency is added.
+4. **Solar archive preservation** — Keep the exact frozen visualization in `protected/`; do not make the scientific evidence pipeline depend on it. Active BURGAMOTS may omit the visualization.
+5. **UI conversion** — Remove hardcoded validation/performance presentation from active claim paths. Present the original-purpose hypothesis as `BLOCKED`, the public heliophysics proposal as a separate `BLOCKED` record, absent scientific systems as `PROPOSED — NOT CURRENTLY IMPLEMENTED`, and scientific numbers only through validated result manifests or explicit illustrative fixtures.
+6. **Verification harness** — Use Node’s built-in test runner and repository scripts; add contract/policy/provenance/boundary/fixture/claim tests, `reproduce`, fail-closed `verify`, and protected-archive regression tests. No scientific dependency is added.
 7. **Documentation/review** — Rewrite active README/metadata only after runtime behavior is stable; create `IMPLEMENTATION_REVIEW.md` and `IMPLEMENTATION_REPORT.md` after verification.
 
 ## Vercel compatibility
@@ -105,4 +99,4 @@ Stop before any action that would:
 - Add DeepXDE/Python scientific packages.
 - Change Vercel project/dashboard settings.
 - Invent scientific thresholds/results/provenance.
-- Replace, simplify, remove, or materially alter the protected solar visualization, orbital calculations, planetary data, helical tunnel, date controls, animation, or visual output without explicit user authorization.
+- Delete, rewrite, or reconstruct the protected frozen solar archive.
