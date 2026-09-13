@@ -49,8 +49,8 @@ export function createEvidenceViewModel({ hypothesisSchema, resultSchema, hypoth
   }
 
   const loaded = registry === undefined
-    ? loadResultManifest(result)
-    : loadResultManifest(result, { registry });
+    ? loadResultManifest(result, { schema: resultSchema })
+    : loadResultManifest(result, { registry, schema: resultSchema });
 
   if (!loaded.ok) {
     throw new Error(`Result manifest rejected: ${loaded.errors.join('; ')}`);
