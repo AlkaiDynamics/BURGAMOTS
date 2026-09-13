@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { loadResultManifest } from '../evidence/resultLoader.js';
+import { createReferenceRegistry, loadResultManifest } from '../evidence/resultLoader.js';
 
 const resultSchema = JSON.parse(readFileSync(new URL('../contracts/analysis-result.schema.json', import.meta.url), 'utf8'));
 const load = (record, options = {}) => loadResultManifest(record, { ...options, schema: resultSchema });
@@ -69,4 +69,26 @@ test('scientific executor cannot self-assign validation without review evidence'
   });
   assert.equal(loaded.ok, false);
   assert.ok(loaded.errors.some((error) => /review/i.test(error)));
+});
+
+test('result cannot survive a changed dataset-manifest hash', () => {
+  const expectedHash = 'a'.repeat(64);
+  const changedHash = 'b'.repeat(64);
+  const registry = createReferenceRegistry({
+    hypotheses: new Set(['burgamots-original-purpose']),
+    datasets: new Map([['dataset-1', { empiricalReady: true, manifestHash: expectedHash }]]),
+    boundaries: new Map([['boundary-1', { valid: true }]]),
+    analysisConfigs: new Map([['analysis-1', { valid: true }]]),
+    runs: new Map([['run-1', { valid: true }]]),
+    reviews: new Set(),
+  });
+  const loaded = load({
+    schemaVersion: '1.0.0', resultId: 'changed-dataset', hypothesisId: 'burgamots-original-purpose', status: 'EVALUATED',
+    fixture: false, datasetManifestId: 'dataset-1', datasetManifestHash: changedHash,
+    evaluationBoundaryId: 'boundary-1', analysisConfigId: 'analysis-1', runMetadataId: 'run-1',
+    method: 'test', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['hypothesis:burgamots-original-purpose'], reviewEvidenceRefs: []
+  }, { registry });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /dataset manifest hash mismatch/i.test(error)), loaded.errors.join('\n'));
 });
