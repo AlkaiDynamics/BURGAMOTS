@@ -120,8 +120,8 @@ const App: React.FC = () => {
               <h2 className="font-serif text-2xl font-bold text-white">What is not established</h2>
             </div>
             <ul className="mt-6 space-y-3 text-sm leading-relaxed text-gray-400">
-              <li>• No validation, causality, blind-test performance, 5σ significance, or prospective predictive superiority is established.</li>
-              <li>• No physical torque measurement or operational DeepXDE/PINN execution is established.</li>
+              <li>• No validation, causality, blind-test performance, extreme-significance threshold, or prospective predictive superiority is established.</li>
+              <li>• No measured physical forcing quantity or operational DeepXDE/PINN execution is established.</li>
               <li>• No economic or operational utility claim is established.</li>
               <li>• No authoritative empirical dataset or confirmatory analysis has been approved.</li>
             </ul>
