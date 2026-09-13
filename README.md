@@ -39,6 +39,7 @@ The successor currently provides:
 - Runtime contract validation.
 - Centralized evidence-state and claim policy.
 - Provenance validation and SHA-256 support for acquired successor inputs.
+- Dataset-manifest hash binding for empirical result manifests.
 - Evaluation-boundary validation for successor runs.
 - Result-manifest loading and fail-closed claim-state derivation.
 - Derived evidence view models for presentation.
@@ -92,9 +93,21 @@ The exact frozen `SolarSystemViz.tsx` source is preserved at:
 protected/solar-visualization-frozen-8a9029b6.tsx
 ```
 
-Its Git blob matches the source at the frozen commit. The archive is retained for possible AYLI/product reuse and has no authority over scientific claim state.
+The preserved source matches frozen Git blob:
 
-BURGAMOTS is not required to keep that visualization mounted in the active application. The active evidence interface currently does not depend on it.
+```text
+e56d956cf927c56b24543259ccee9475ab41d6b6
+```
+
+Executed SHA-256 verification of the protected source produced:
+
+```text
+4d0efb7144d437f66625bdaadd357b8e8e76c605e9870164f15eff81ee820180
+```
+
+The archive is retained for possible AYLI/product reuse and has no authority over scientific claim state.
+
+BURGAMOTS is not required to keep that visualization mounted in the active application. The active evidence interface does not depend on it.
 
 See `SOLAR_VISUALIZATION_BACKUP_REPORT.md` for preservation details.
 
@@ -130,6 +143,8 @@ npm run audit:fixtures
 npm run audit:provenance
 npm run audit:leakage
 npm run audit:claims
+npm run audit:env
+npm run audit:solar-backup
 npm run reproduce
 npm run verify
 ```
@@ -138,7 +153,33 @@ npm run verify
 
 `npm run verify` is fail-closed: any failing required command must produce a nonzero exit status.
 
-Do not interpret the existence of these commands as proof that the full suite has passed. Execution results are recorded only when a tool actually runs them.
+The Vercel prebuild gate also proves the harness itself is fail-closed by requiring:
+
+- an intentionally invalid fixture to produce a nonzero exit; and
+- an intentionally injected verifier failure to propagate a nonzero exit.
+
+## Verified software-integrity state
+
+The completion verification was executed on the deployed successor path rather than inferred from the existence of scripts.
+
+Observed execution results:
+
+- Intentionally invalid fixture rejected with exit `1`.
+- Injected verifier failure propagated with exit `17`.
+- TypeScript active-runtime typecheck passed.
+- `61/61` tests passed.
+- Fixture isolation audit passed.
+- Provenance audit passed.
+- Successor leakage-boundary audit passed while historical leakage remained `UNRESOLVED`.
+- Active-claim audit passed.
+- Active-client environment-variable audit passed.
+- Solar-backup blob and SHA-256 audit passed.
+- Reproduction confirmed the original-purpose hypothesis remains `BLOCKED`.
+- Reproduction confirmed the public heliophysics proposal remains `BLOCKED`.
+- Production Vite build completed successfully on Vercel.
+- The generated preview root returned HTTP `200`.
+
+These results establish software-integrity behavior only. They do not establish the underlying BURGAMOTS scientific hypothesis.
 
 ## Deployment
 
@@ -148,18 +189,22 @@ Current refactor constraints:
 
 - No server/API layer is added.
 - No new secret or runtime environment variable is required.
+- Active client code is audited against `process.env`, `import.meta.env`, and `VITE_*` access.
 - No Vercel dashboard change is authorized.
-- No framework preset, domain, DNS, project ID, or build-command change is authorized.
+- No framework preset, domain, DNS, project ID, or build-command dashboard change is authorized.
+- The stale browser import map was removed; active dependency resolution is through npm/Vite.
 
 A successful deployment or build establishes software compatibility only; it does not establish scientific validity.
 
-## Audit and planning records
+## Audit, review, and implementation records
 
 Key records include:
 
 ```text
 REFRACTOR_REASONING.md
 IMPLEMENTATION_PLAN.md
+IMPLEMENTATION_REVIEW.md
+IMPLEMENTATION_REPORT.md
 SOLAR_VISUALIZATION_BACKUP_REPORT.md
 audit/2026-09-12/
 ```
@@ -169,3 +214,5 @@ The frozen audit remains authoritative for historical findings. Refactor code mu
 ## Current scientific status
 
 The successor establishes evidence-handling controls and an honest blocked state. It does not establish the underlying BURGAMOTS scientific hypothesis, physical causality, prospective predictive superiority, or operational utility.
+
+No scientific experiment, empirical dataset acquisition, confirmatory statistical method, DeepXDE scientific implementation, physical torque model, merge to `main`, or production/main deployment is part of this completed integrity refactor.
