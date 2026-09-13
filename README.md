@@ -179,7 +179,7 @@ Observed execution results:
 - Production Vite build completed successfully on Vercel.
 - The generated preview root returned HTTP `200`.
 
-The README update that records these results was itself verified successfully by the same fail-closed Vercel prebuild/build path at commit `30e88cd5a02b2b8d25824ce90c9890f602228ea6`.
+The documentation state recording these results was re-run through the same fail-closed Vercel prebuild/build path after the stale-SHA conflict was resolved.
 
 These results establish software-integrity behavior only. They do not establish the underlying BURGAMOTS scientific hypothesis.
 
