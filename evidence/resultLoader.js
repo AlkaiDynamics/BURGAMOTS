@@ -1,8 +1,5 @@
-import { readFileSync } from 'node:fs';
 import { validateContract } from './validator.js';
 import { deriveClaimStatus, EvidenceState } from './claimPolicy.js';
-
-const resultSchema = JSON.parse(readFileSync(new URL('../contracts/analysis-result.schema.json', import.meta.url), 'utf8'));
 
 const DEFAULT_REFERENCE_REGISTRY = Object.freeze({
   hypotheses: new Set(['burgamots-original-purpose', 'public-heliophysics-proposal']),
@@ -41,11 +38,19 @@ export function createReferenceRegistry(overrides = {}) {
   };
 }
 
-export function loadResultManifest(record, { registry = createReferenceRegistry() } = {}) {
-  const schemaCheck = validateContract(resultSchema, record);
-  const errors = [...schemaCheck.errors];
+export function loadResultManifest(record, { registry = createReferenceRegistry(), schema } = {}) {
+  const errors = [];
 
-  if (!registry.hypotheses.has(record?.hypothesisId)) errors.push(`unknown reference: hypotheses:${record?.hypothesisId ?? 'null'}`);
+  if (!schema) {
+    errors.push('analysis result schema is required; result loading fails closed without runtime schema validation');
+  } else {
+    const schemaCheck = validateContract(schema, record);
+    errors.push(...schemaCheck.errors);
+  }
+
+  if (!registry.hypotheses.has(record?.hypothesisId)) {
+    errors.push(`unknown reference: hypotheses:${record?.hypothesisId ?? 'null'}`);
+  }
 
   for (const ref of Array.isArray(record?.evidenceRefs) ? record.evidenceRefs : []) {
     if (ref.startsWith('hypothesis:')) {
@@ -71,7 +76,9 @@ export function loadResultManifest(record, { registry = createReferenceRegistry(
     checkReference(errors, registry, 'runs', record?.runMetadataId);
 
     const dataset = registry.datasets.get(record?.datasetManifestId);
-    if (dataset && dataset.empiricalReady !== true) errors.push(`dataset provenance incomplete: ${record.datasetManifestId} is not empirical-ready`);
+    if (dataset && dataset.empiricalReady !== true) {
+      errors.push(`dataset provenance incomplete: ${record.datasetManifestId} is not empirical-ready`);
+    }
   }
 
   if (record?.status === EvidenceState.VALIDATED) {
