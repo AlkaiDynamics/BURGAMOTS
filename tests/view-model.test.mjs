@@ -9,10 +9,11 @@ const hypothesisSchema = readJson('contracts/hypothesis.schema.json');
 const resultSchema = readJson('contracts/analysis-result.schema.json');
 const hypothesis = readJson('evidence/hypotheses/original-purpose.json');
 const blockedResult = readJson('evidence/results/original-purpose-blocked.json');
+const datasetHash = 'a'.repeat(64);
 
 const completeRegistry = createReferenceRegistry({
   hypotheses: new Set(['burgamots-original-purpose']),
-  datasets: new Map([['dataset-1', { empiricalReady: true }]]),
+  datasets: new Map([['dataset-1', { empiricalReady: true, manifestHash: datasetHash }]]),
   boundaries: new Map([['boundary-1', { valid: true }]]),
   analysisConfigs: new Map([['analysis-1', { valid: true }]]),
   runs: new Map([['run-1', { valid: true }]]),
@@ -27,6 +28,7 @@ function empiricalResult(overrides = {}) {
     status: 'NEGATIVE_NULL_FAVORING',
     fixture: false,
     datasetManifestId: 'dataset-1',
+    datasetManifestHash: datasetHash,
     evaluationBoundaryId: 'boundary-1',
     analysisConfigId: 'analysis-1',
     runMetadataId: 'run-1',
