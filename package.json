@@ -15,6 +15,7 @@
     "audit:provenance": "node scripts/audit-provenance.mjs",
     "audit:leakage": "node scripts/audit-leakage.mjs",
     "audit:claims": "node scripts/audit-claims.mjs",
+    "audit:env": "node scripts/audit-env.mjs",
     "audit:solar-backup": "node scripts/audit-solar-backup.mjs",
     "reproduce": "node scripts/reproduce.mjs",
     "verify": "node scripts/verify.mjs",
