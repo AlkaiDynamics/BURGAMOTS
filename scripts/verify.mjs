@@ -5,10 +5,11 @@ if (process.env.BURGAMOTS_VERIFY_SELFTEST_FAIL === '1') {
   process.exit(17);
 }
 
+const skipBuild = process.env.BURGAMOTS_VERIFY_SKIP_BUILD === '1';
 const commands = [
   ['npm', ['run', 'typecheck']],
   ['npm', ['test']],
-  ['npm', ['run', 'build']],
+  ...(skipBuild ? [] : [['npm', ['run', 'build']]]),
   ['npm', ['run', 'audit:fixtures']],
   ['npm', ['run', 'audit:provenance']],
   ['npm', ['run', 'audit:leakage']],
@@ -30,4 +31,8 @@ for (const [command, args] of commands) {
   }
 }
 
-console.log('\n[verify] PASS — all required integrity commands succeeded.');
+if (skipBuild) {
+  console.log('\n[verify] PASS — prebuild integrity commands succeeded; build is delegated to the calling npm build lifecycle.');
+} else {
+  console.log('\n[verify] PASS — all required integrity commands succeeded.');
+}
