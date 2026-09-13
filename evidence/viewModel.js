@@ -1,5 +1,6 @@
 import { validateContract } from './validator.js';
-import { deriveClaimStatus, EvidenceState } from './claimPolicy.js';
+import { EvidenceState } from './claimPolicy.js';
+import { loadResultManifest } from './resultLoader.js';
 
 const labelFor = (state) => {
   switch (state) {
@@ -32,21 +33,30 @@ const summaryFor = (state) => {
   }
 };
 
-export function createEvidenceViewModel({ hypothesisSchema, resultSchema, hypothesis, result }) {
+export function createEvidenceViewModel({ hypothesisSchema, resultSchema, hypothesis, result, registry }) {
   const hypothesisCheck = validateContract(hypothesisSchema, hypothesis);
-  if (!hypothesisCheck.valid) throw new Error(`Hypothesis contract invalid: ${hypothesisCheck.errors.join('; ')}`);
+  if (!hypothesisCheck.valid) {
+    throw new Error(`Hypothesis contract invalid: ${hypothesisCheck.errors.join('; ')}`);
+  }
 
   const resultCheck = validateContract(resultSchema, result);
-  if (!resultCheck.valid) throw new Error(`Result manifest invalid: ${resultCheck.errors.join('; ')}`);
+  if (!resultCheck.valid) {
+    throw new Error(`Result manifest invalid: ${resultCheck.errors.join('; ')}`);
+  }
 
   if (result.hypothesisId !== hypothesis.id) {
     throw new Error(`Hypothesis isolation violation: result ${result.resultId} belongs to ${result.hypothesisId}, not ${hypothesis.id}.`);
   }
 
-  const claimStatus = deriveClaimStatus(result);
-  if (result.status !== EvidenceState.BLOCKED && claimStatus.state === EvidenceState.BLOCKED) {
-    throw new Error(`Claim-state gate blocked presentation: ${claimStatus.rationale}`);
+  const loaded = registry === undefined
+    ? loadResultManifest(result)
+    : loadResultManifest(result, { registry });
+
+  if (!loaded.ok) {
+    throw new Error(`Result manifest rejected: ${loaded.errors.join('; ')}`);
   }
+
+  const claimStatus = loaded.claimStatus;
 
   return Object.freeze({
     id: result.resultId,
