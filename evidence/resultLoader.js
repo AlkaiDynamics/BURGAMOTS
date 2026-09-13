@@ -1,9 +1,11 @@
 import { validateContract } from './validator.js';
 import { deriveClaimStatus, EvidenceState } from './claimPolicy.js';
 
+const SHA256_RE = /^[a-f0-9]{64}$/;
+
 const DEFAULT_REFERENCE_REGISTRY = Object.freeze({
   hypotheses: new Set(['burgamots-original-purpose', 'public-heliophysics-proposal']),
-  datasets: new Map([['historical-cited-sources-unacquired', { empiricalReady: false }]]),
+  datasets: new Map([['historical-cited-sources-unacquired', { empiricalReady: false, manifestHash: null }]]),
   boundaries: new Map(),
   analysisConfigs: new Map(),
   runs: new Map(),
@@ -75,9 +77,20 @@ export function loadResultManifest(record, { registry = createReferenceRegistry(
     checkReference(errors, registry, 'analysisConfigs', record?.analysisConfigId);
     checkReference(errors, registry, 'runs', record?.runMetadataId);
 
+    if (!SHA256_RE.test(record?.datasetManifestHash ?? '')) {
+      errors.push('dataset manifest hash required: empirical result must bind to a valid SHA-256 manifest fingerprint');
+    }
+
     const dataset = registry.datasets.get(record?.datasetManifestId);
     if (dataset && dataset.empiricalReady !== true) {
       errors.push(`dataset provenance incomplete: ${record.datasetManifestId} is not empirical-ready`);
+    }
+    if (dataset && dataset.empiricalReady === true) {
+      if (!SHA256_RE.test(dataset.manifestHash ?? '')) {
+        errors.push(`dataset provenance incomplete: ${record.datasetManifestId} has no registered manifest hash`);
+      } else if (record?.datasetManifestHash !== dataset.manifestHash) {
+        errors.push(`dataset manifest hash mismatch: result references ${record?.datasetManifestHash ?? 'null'} but registry has ${dataset.manifestHash}`);
+      }
     }
   }
 
