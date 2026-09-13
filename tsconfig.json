@@ -16,5 +16,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["./**/*.ts", "./**/*.tsx"]
+  "include": [
+    "App.tsx",
+    "index.tsx",
+    "components/EvidencePanel.tsx",
+    "evidence/**/*.d.ts",
+    "vite.config.ts"
+  ]
 }

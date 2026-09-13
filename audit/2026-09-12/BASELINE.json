@@ -1,0 +1,32 @@
+{
+  "repository": "AlkaiDynamics/BURGAMOTS",
+  "baseBranch": "main",
+  "baseCommit": "8a9029b69b107d4230c9f053b4c8ef545a99e90e",
+  "baseTree": "3105e79d41a014319fe47dc16143658232d143d5",
+  "successorBranch": "refactor/evidence-integrity",
+  "auditDate": "2026-09-12",
+  "artifacts": [
+    {"path":"AUDIT_REPORT.md","storedAs":"audit/2026-09-12/AUDIT_REPORT.md","sha256":"472c96c235ef85e44575d35174c2802091056b5b7e26b8411cbb209d58fe2822","bytes":12593},
+    {"path":"AUDIT_CONTRACT.md","storedAs":"audit/2026-09-12/AUDIT_CONTRACT.md","sha256":"23902f24be5a42baa0b31c75451c49eefd2f31c0d3f10a8e09fb7d6b8bbdbbec","bytes":6528},
+    {"path":"CLAIM_REGISTER.md","storedAs":"audit/2026-09-12/CLAIM_REGISTER.md","sha256":"d8a98eb680849bdb5f87d97578ed87cd8781e52fa3ea852370e8016ace07ddc1","bytes":14053},
+    {"path":"DATAFLOW.md","storedAs":"audit/2026-09-12/DATAFLOW.md","sha256":"58b9825eecd576b3e2415a2ecf6d40269b4249ac1146231418513f254c75dc76","bytes":4485},
+    {"path":"REPRODUCTION_LOG.md","storedAs":"audit/2026-09-12/REPRODUCTION_LOG.md","sha256":"a57907eb68a145070227d4d76a0d4fa7d34b00ca90c14ab8c57a2962967d8063","bytes":3774},
+    {"path":"FINDINGS.md","storedAs":"audit/2026-09-12/FINDINGS.md.gz","compression":"gzip","sha256":"5cf7abef0f492d084fe709d8f488fdb53744991fc51a8f715464aed2875db591","bytes":40617},
+    {"path":"DEFECT_LEDGER.json","storedAs":"audit/2026-09-12/DEFECT_LEDGER.json.gz","compression":"gzip","sha256":"5ccb8ef75c04f3fa7f0caf6d405e29a18dcb6188bdb8130d69f51aeed35d7fda","bytes":41203},
+    {"path":"README_AUDIT.md","storedAs":"audit/2026-09-12/README_AUDIT.md","sha256":"044bbe8d29ec990c1aa1d461510b9cd74ee22b56c61ba46f072ac63016130a05","bytes":622}
+  ],
+  "suppliedPlanningInputs": [
+    {"path":"IMPLEMENTATION_DESIGN_PACKAGE.md","sha256":"9a7fdd126791ea4f4659bdc64155d666c150f7f167d2b8d5c346f3c3f68b0da0"},
+    {"path":"CHANGE_SPECIFICATIONS.md","sha256":"08b6b931b985fd5a293b594492028ed357473b6cc220bfa3cadfbbe7307fa2d0"},
+    {"path":"USER_DECISION_REGISTER.md","sha256":"913c38144c6c3603d1036854a714ec9eca3ff442826c146c1710aa9eb2b5d82a"},
+    {"path":"OPTION_COMPARISON.md","sha256":"a581cbebb685f0964a81b7dd2920a48417819e94379b45565da85bdb4a0b0483"},
+    {"path":"READINESS_REVIEW.md","sha256":"c6e5eb89bdd185b9781dbbb02722d1815204a40802d8d1a7fb06a1106a09856a"},
+    {"path":"RESEARCH_RECORD.md","sha256":"6280e42bd0f4de50e2fc367885a603a4eb328272beff999a1c11d62b25074571"},
+    {"path":"TRACEABILITY_MATRIX.csv","sha256":"56ec2254aa9abe3e08eb5226703262e0cf6f9f6cf1d827a724a3f3227575be86"},
+    {"path":"CHANGE_MAP.json","sha256":"73881d170b32929ec9b515e7d6e564ce0a6815f9ea3d2ca41b0ec3d843bcfe45"}
+  ],
+  "notes": [
+    "FINDINGS.md and DEFECT_LEDGER.json are stored as deterministic gzip archives because the GitHub connector write surface accepts text/blob payloads but the source artifacts exceed the practical single-call text size. Their SHA-256 entries are for the decompressed original bytes.",
+    "Planning inputs were supplied in the working context and read before implementation; they are hash-recorded here but are not rewritten into the frozen audit directory unless explicitly required later."
+  ]
+}

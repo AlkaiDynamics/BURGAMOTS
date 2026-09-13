@@ -5,8 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/prebuild-integrity.mjs",
     "build": "vite build",
     "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "audit:harness-invalid": "node scripts/harness-invalid-fixture.mjs",
+    "audit:fixtures": "node scripts/audit-fixtures.mjs",
+    "audit:provenance": "node scripts/audit-provenance.mjs",
+    "audit:leakage": "node scripts/audit-leakage.mjs",
+    "audit:claims": "node scripts/audit-claims.mjs",
+    "audit:env": "node scripts/audit-env.mjs",
+    "audit:solar-backup": "node scripts/audit-solar-backup.mjs",
+    "reproduce": "node scripts/reproduce.mjs",
+    "verify": "node scripts/verify.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

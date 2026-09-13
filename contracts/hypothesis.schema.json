@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alkai-dynamics.example/contracts/hypothesis.schema.json",
+  "title": "HypothesisContract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion","id","title","originalPurpose","nullHypothesis","alternativeHypothesis","targetOutcome","unitOfAnalysis","independentUnit","populationSamplingFrame","estimand","evaluationPolicy","primaryComparisonControlFamily","status","unresolvedFields","allowedClaims","prohibitedClaims"],
+  "properties": {
+    "schemaVersion": {"type":"string","minLength":1},
+    "id": {"type":"string","minLength":1},
+    "title": {"type":"string","minLength":1},
+    "originalPurpose": {"type":"string","minLength":1},
+    "nullHypothesis": {"type":["string","null"]},
+    "alternativeHypothesis": {"type":["string","null"]},
+    "targetOutcome": {"type":["string","null"]},
+    "unitOfAnalysis": {"type":["string","null"]},
+    "independentUnit": {"type":["string","null"]},
+    "populationSamplingFrame": {"type":["string","null"]},
+    "estimand": {"type":["string","null"]},
+    "evaluationPolicy": {"type":["string","null"]},
+    "primaryComparisonControlFamily": {"type":["array","null"],"items":{"type":"string"}},
+    "status": {"enum":["BLOCKED","DRAFT","OPERATIONAL"]},
+    "unresolvedFields": {"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "allowedClaims": {"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "prohibitedClaims": {"type":"array","items":{"type":"string"},"uniqueItems":true}
+  }
+}
