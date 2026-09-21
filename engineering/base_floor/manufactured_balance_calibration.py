@@ -24,10 +24,13 @@ from firedrake import (
     CellNormal,
     Constant,
     Function,
+    FunctionSpace,
     IcosahedralSphereMesh,
     SpatialCoordinate,
     TestFunction,
+    TestFunctions,
     TrialFunction,
+    TrialFunctions,
     as_vector,
     assemble,
     cross,
@@ -76,6 +79,53 @@ def build():
     )
 
 
+def matfree_real_solver_params():
+    return {
+        "mat_type": "matfree",
+        "ksp_type": "fgmres",
+        "ksp_rtol": 1.0e-14,
+        "ksp_atol": 1.0e-15,
+        "pc_type": "fieldsplit",
+        "pc_fieldsplit_type": "schur",
+        "pc_fieldsplit_schur_fact_type": "full",
+        "pc_fieldsplit_0_fields": "0",
+        "pc_fieldsplit_1_fields": "1",
+        "fieldsplit_0": {
+            "ksp_type": "preonly",
+            "pc_type": "python",
+            "pc_python_type": "firedrake.AssembledPC",
+            "assembled": {
+                "ksp_type": "gmres",
+                "ksp_rtol": 1.0e-14,
+                "ksp_atol": 1.0e-15,
+                "pc_type": "jacobi",
+            },
+        },
+        "fieldsplit_1": {
+            "ksp_type": "gmres",
+            "ksp_rtol": 1.0e-14,
+            "ksp_atol": 1.0e-15,
+            "pc_type": "none",
+        },
+    }
+
+
+def zero_mean_project_v0(mesh, V0, dxq, source_expr, name):
+    R = FunctionSpace(mesh, "R", 0)
+    WA = V0 * R
+    mixed = Function(WA, name=f"{name}_lambda")
+    scalar_trial, lambda_trial = TrialFunctions(WA)
+    gamma, mu = TestFunctions(WA)
+    solve(
+        (gamma * scalar_trial + lambda_trial * gamma + mu * scalar_trial) * dxq
+        == gamma * source_expr * dxq,
+        mixed,
+        solver_parameters=matfree_real_solver_params(),
+    )
+    scalar_h, _ = mixed.subfunctions
+    return scalar_h
+
+
 def coefficient_anomaly(H_h, V2):
     H0_h = Function(V2, name="cal_H0_h")
     H0_h.assign(H0_VALUE)
@@ -108,15 +158,12 @@ def manufactured_balanced_state(mesh, V0, V1, V2, dxq):
 
     u_h = Function(V1, name="cal_u")
     H_h = Function(V2, name="cal_H")
-    A_h = Function(V0, name="cal_A")
     u_h.interpolate(u_expr)
     H_h.interpolate(H_expr)
-    A_h.interpolate(A_expr)
 
-    # Remove the tiny numerical gauge mean without fitting any physics.
-    area = float(assemble(Constant(1.0) * dxq))
-    A_mean = float(assemble(A_h * dxq)) / area
-    A_h.dat.data[:] -= A_mean
+    # V0 is CG2+B3; direct expression interpolation has no defined dual basis
+    # on this pinned stack. Use the frozen variational zero-mean projection.
+    A_h = zero_mean_project_v0(mesh, V0, dxq, A_expr, "cal_A")
 
     return u_h, H_h, A_h, eta_amp
 
