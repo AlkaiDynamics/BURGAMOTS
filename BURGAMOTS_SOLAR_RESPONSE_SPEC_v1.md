@@ -6,7 +6,7 @@ BURGAMOTS_FORCING_LEDGER_v1: LOCKED
 
 BURGAMOTS_TACH_SWMHD_v1: FROZEN — equation / forcing-contract level
 
-NEXT UNIT: BURGAMOTS_TACH_EXPERIMENT_PROTOCOL_v1
+NEXT UNIT: BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1
 
 PINN / solver selection: NOT AUTHORIZED YET
 
@@ -461,7 +461,7 @@ Frozen now:
 9. No fourth evolved state variable.
 10. No trainable upstream forcing freedom.
 
-Deferred to BURGAMOTS_TACH_EXPERIMENT_PROTOCOL_v1:
+Base-state and causal-experiment items formerly deferred here are frozen separately in `BURGAMOTS_BASESTATE_PROTOCOL_v1.md`. Remaining numerical items are deferred to BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1:
 
 - numerical values of the observational v1 geometry record;
 - equilibrium/base profiles;
@@ -484,7 +484,9 @@ Deferred to BURGAMOTS_TACH_EXPERIMENT_PROTOCOL_v1:
 
 BURGAMOTS_TACH_SWMHD_v1: FROZEN
 
-→ NEXT: BURGAMOTS_TACH_EXPERIMENT_PROTOCOL_v1
+→ BURGAMOTS_BASESTATE_PROTOCOL_v1: FROZEN
+
+→ NEXT: BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1
 
 → ONLY THEN: solver / PINN donor comparison
 
