@@ -326,7 +326,7 @@ The active application must not present as established any claim of:
 - Purged demo-era scientific-looking numbers and dormant claim-bearing visualization sources are absent from the successor product surface; the audit record remains separate.
 - Active client source has no environment-variable access.
 - The fail-closed harness rejects an invalid fixture and propagates an injected failure.
-- The executed verification run passed 61/61 tests, all integrity audits, blocked-state reproduction, and the production Vite build on the verified preview implementation commit.
+- The executed verification run passed the full automated test suite, all integrity audits, blocked-state reproduction, and the production Vite build on the verified preview implementation commit.
 
 ## Not established
 
