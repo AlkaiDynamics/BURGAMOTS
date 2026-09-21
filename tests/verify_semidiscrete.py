@@ -45,7 +45,7 @@ from gusto.core.function_spaces import Spaces
 
 STAGE1_ABS_TOL = 1.0e-11
 STAGE1_REL_TOL = 1.0e-14
-PAIR_TOL = 1.0e-12
+PAIR_ABS_TOL = 1.0e-12\nREL_TOL = 1.0e-15
 GAUGE_TOL = 1.0e-12
 STAGE2_TOL = 1.0e-12
 
