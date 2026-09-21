@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "burgamots-magnetic-prior-family.schema.json",
+  "title": "BURGAMOTS frozen toroidal magnetic-prior family",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "family_id",
+    "version",
+    "status",
+    "theta_definition",
+    "units",
+    "members",
+    "family_sha256",
+    "outcome_independence"
+  ],
+  "properties": {
+    "family_id": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "status": {"const": "FROZEN"},
+    "theta_definition": {"const": "colatitude_radians_north_pole_zero"},
+    "units": {"type": "string", "minLength": 1},
+    "members": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "member_id",
+          "definition",
+          "provenance",
+          "pole_regularity",
+          "content_sha256"
+        ],
+        "properties": {
+          "member_id": {"type": "string", "minLength": 1},
+          "definition": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type", "expression"],
+                "properties": {
+                  "type": {"const": "analytic"},
+                  "expression": {"type": "string", "minLength": 1},
+                  "parameters": {"type": "object"}
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type", "theta", "b_phi", "interpolation"],
+                "properties": {
+                  "type": {"const": "tabulated"},
+                  "theta": {"type": "array", "minItems": 2, "items": {"type": "number"}},
+                  "b_phi": {"type": "array", "minItems": 2, "items": {"type": "number"}},
+                  "interpolation": {"type": "string", "minLength": 1}
+                }
+              }
+            ]
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["citation_or_rationale", "locator"],
+            "properties": {
+              "citation_or_rationale": {"type": "string", "minLength": 1},
+              "locator": {"type": "string", "minLength": 1}
+            }
+          },
+          "pole_regularity": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["declared_behavior"],
+            "properties": {
+              "declared_behavior": {"const": "O(sin(theta))"}
+            }
+          },
+          "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "family_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "outcome_independence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["burgamots_response_used", "posthoc_member_selection_allowed", "selection_basis"],
+      "properties": {
+        "burgamots_response_used": {"const": false},
+        "posthoc_member_selection_allowed": {"const": false},
+        "selection_basis": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
