@@ -39,6 +39,12 @@ from firedrake import (
 )
 from gusto.core.function_spaces import Spaces
 
+from numerics.coefficient_centering import (
+    coefficient_anomaly,
+    exact_background_field,
+    centered_gravity_d2,
+)
+
 
 ABS_TOL = 1.0e-12
 REL_TOL = 5.0e-14
@@ -167,32 +173,23 @@ def verify_member(member_name, H_target_value, mesh, V0, V1, V2, dxq):
 
     # BASE-P representative/minimizer equals the deterministic target because
     # the target is already an admissible stationary point of the unforced
-    # semidiscrete equations. The solves below still enforce the frozen
-    # projection spaces, mass representation, and zero-mean A gauge.
+    # semidiscrete equations. Under Amendment A1, targets already exactly in
+    # their destination FE spaces realize P_h v = v directly at coefficient
+    # level rather than through redundant approximate mass solves.
     u_h = Function(V1, name=f"{member_name}_u_h")
-    u_trial = TrialFunction(V1)
+    u_h.assign(0.0)
     w = TestFunction(V1)
-    solve(
-        H0 * inner(w, u_trial) * dxq
-        ==
-        H0 * inner(w, u_target) * dxq,
-        u_h,
-        solver_parameters=strict_solver_params,
-    )
 
     H_h = Function(V2, name=f"{member_name}_H_h")
-    H_trial = TrialFunction(V2)
+    H_h.assign(H_target_value)
     phi = TestFunction(V2)
     H_target = Constant(H_target_value)
-    solve(
-        phi * H_trial * dxq
-        ==
-        phi * H_target * dxq,
-        H_h,
-        solver_parameters=strict_solver_params,
-    )
 
-    A_h = solve_zero_mean_scalar_projection(mesh, V0, dxq, Constant(0.0), f"{member_name}_A_h")
+    A_h = Function(V0, name=f"{member_name}_A_h")
+    A_h.assign(0.0)
+
+    H0_h = exact_background_field(V2, H0_value, name=f"{member_name}_H0_h")
+    eta_h = coefficient_anomaly(H_h, H0_h, name=f"{member_name}_eta_h")
 
     # Compatible magnetic flux map.
     m_h = Function(V1, name=f"{member_name}_m_h")
@@ -216,7 +213,7 @@ def verify_member(member_name, H_target_value, mesh, V0, V1, V2, dxq):
     K_rhs = (
         0.5 * inner(u_h, u_h)
         - inner(m_h, m_h) / (2.0 * kappa * H_h**2)
-        + gstar * H_h
+        + centered_gravity_d2(eta_h, gstar_value)
     )
     solve(
         phi * K_trial * dxq
