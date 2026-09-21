@@ -354,16 +354,25 @@ def test_semidiscrete_cancellation():
     # -------------------------
     # Stage 2: semidiscrete Hamiltonian chain rule
     # -------------------------
-    dHdt = assemble(
-        (
-            inner(U_h, du_h)
-            + K_h * dH_h
-            + M_h * dA_h
-        ) * dxq
-    )
+    kinetic_rate = float(assemble(inner(U_h, du_h) * dxq))
+    thickness_rate = float(assemble((K_h * dH_h) * dxq))
+    magnetic_rate = float(assemble((M_h * dA_h) * dxq))
 
-    dHdt_abs = abs(float(dHdt))
-    print(f"STAGE 2 (Semidiscrete dH/dt) = {dHdt_abs:.17e}")
+    dHdt = kinetic_rate + thickness_rate + magnetic_rate
+    stage2_scale = (
+        abs(kinetic_rate)
+        + abs(thickness_rate)
+        + abs(magnetic_rate)
+    )
+    dHdt_abs = abs(dHdt)
+    stage2_relative = dHdt_abs / max(stage2_scale, 1.0)
+
+    print(f"STAGE 2 kinetic contribution = {kinetic_rate:.17e}")
+    print(f"STAGE 2 thickness contribution= {thickness_rate:.17e}")
+    print(f"STAGE 2 magnetic contribution = {magnetic_rate:.17e}")
+    print(f"STAGE 2 component scale       = {stage2_scale:.17e}")
+    print(f"STAGE 2 (Semidiscrete dH/dt)  = {dHdt_abs:.17e}")
+    print(f"STAGE 2 relative cancellation = {stage2_relative:.17e}")
     require(
         dHdt_abs < STAGE2_TOL,
         f"RIESZ/RATE SOLVE OR GAUGE FAILURE: |dH/dt|={dHdt_abs} >= {STAGE2_TOL}",
