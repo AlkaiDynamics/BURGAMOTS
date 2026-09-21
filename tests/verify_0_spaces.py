@@ -98,8 +98,8 @@ def test_verify_0():
 
     h1_text = str(complex_.base_elt_hori_cg)
     require(
-        "Bubble" in h1_text and ("Lagrange" in h1_text or "CG" in h1_text),
-        f"H1 space is not CG2 enriched by a cubic bubble: {h1_text}",
+        "CG2" in h1_text and "B3" in h1_text,
+        f"H1 space is not CG2 enriched by cubic B3: {h1_text}",
     )
 
     print("VERIFY-0 pinned Gusto commit:", GUSTO_PINNED_COMMIT)
