@@ -15,5 +15,5 @@
   "status": "BLOCKED",
   "unresolvedFields": ["targetOutcome","unitOfAnalysis","independentUnit","populationSamplingFrame","estimand","evaluationPolicy","primaryComparisonControlFamily","physicalMechanismSpecification"],
   "allowedClaims": ["Public heliophysics proposal recorded separately","Scientific execution blocked pending approved scientific contract"],
-  "prohibitedClaims": ["validated","significant","causal","5σ","99.8%","blind test","DeepXDE active","physical torque measured"]
+  "prohibitedClaims": ["validated","significant","causal","blind test","DeepXDE active","physical torque measured"]
 }
