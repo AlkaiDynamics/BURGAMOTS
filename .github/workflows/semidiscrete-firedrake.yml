@@ -7,6 +7,8 @@ on:
     paths:
       - "tests/verify_semidiscrete.py"
       - "BURGAMOTS_NUMERICS_v1.md"
+      - "BURGAMOTS_NUMERICS_AMENDMENT_A1.md"
+      - "numerics/coefficient_centering.py"
       - "SEMIDISCRETE_REPORT.md"
       - ".github/workflows/semidiscrete-firedrake.yml"
 
@@ -29,5 +31,5 @@ jobs:
               python3 --version
               python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
-              python3 /work/tests/verify_semidiscrete.py
+              PYTHONPATH=/work python3 /work/tests/verify_semidiscrete.py
             '
