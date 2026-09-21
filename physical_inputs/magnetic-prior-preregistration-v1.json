@@ -69,7 +69,7 @@
       "claim": "Included before BURGAMOTS outcomes to span the independently motivated strong-field regime."
     }
   ],
-  "content_sha256": "b3f4c7f83e5418e57846859a6e0da756620ef4d5961dba1a0b7e4ca6760f259f",
+  "content_sha256": "225c65b25293813b6e1cc857c51ba44f21ac5cf09c2e3fc057216a77225b39e6",
   "outcome_independence": {
     "burgamots_response_used": false,
     "posthoc_member_selection_allowed": false,
