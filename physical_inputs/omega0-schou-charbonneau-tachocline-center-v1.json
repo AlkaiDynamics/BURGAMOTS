@@ -1,0 +1,39 @@
+{
+  "record_id": "BURGAMOTS_OMEGA0_SCHOU_CHARBONNEAU_TACHOCLINE_CENTER_v1",
+  "version": "1.0.0",
+  "status": "FROZEN",
+  "source": {
+    "citation": "Schou et al. (1998), ApJ 505:390-417, DOI 10.1086/306146; analytic helioseismic fit as used by Dikpati & Charbonneau (1999), ApJ 518:508-520, DOI 10.1086/307269.",
+    "locator": "doi:10.1086/306146; doi:10.1086/307269",
+    "acquired_at": "2026-09-21",
+    "source_version": "published analytic fit to helioseismic rotation profile"
+  },
+  "coordinate_convention": {
+    "theta_definition": "colatitude_radians_north_pole_zero",
+    "frame": "sidereal angular velocity"
+  },
+  "units": "rad s^-1",
+  "representation": {
+    "type": "coefficients",
+    "basis": "Omega0(theta)=c0+c2*cos(theta)^2+c4*cos(theta)^4, evaluated at the tachocline-center radius of the cited helioseismic fit where the radial transition factor is 1/2",
+    "coefficients": [
+      2.8070130359824802e-06,
+      -1.9694644345354412e-07,
+      -2.108951148354828e-07
+    ]
+  },
+  "validity": {
+    "tachocline_center_source_radius_Rsun": 0.7,
+    "underlying_frequency_coefficients_nHz": {
+      "c0": 446.75,
+      "c2": -31.345,
+      "c4": -33.565
+    },
+    "derivation": "At the fit transition center, erf(0)=0, so Omega0/2pi = 0.5*(432.8 + 460.7 - 62.69 cos^2(theta) - 67.13 cos^4(theta)) nHz."
+  },
+  "content_sha256": "189155897971d9213c53e89f48d8cc563e1e89e00ea532b1c1fae21aa8679643",
+  "outcome_independence": {
+    "burgamots_response_used": false,
+    "selection_basis": "Externally published helioseismic differential-rotation fit frozen before any BURGAMOTS physical response run."
+  }
+}
