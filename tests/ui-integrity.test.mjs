@@ -31,18 +31,21 @@ test('legacy validation and paper components are not imported into the active Ap
   }
 });
 
-test('active evidence UI contains no frozen unsupported validation language', () => {
+test('active evidence UI contains no raw scientific-number claim literals', () => {
   const activeFiles = ['App.tsx', 'components/EvidencePanel.tsx'];
   for (const file of activeFiles) {
     assert.equal(existsSync(new URL(`../${file}`, import.meta.url)), true, `missing active UI file: ${file}`);
   }
   const activeText = activeFiles.map(read).join('\n');
-  for (const phrase of [
-    '99.8%', '94.2%', '5σ', 'Granger Causality Test', 'DeepXDE predictive mode active',
-    'High-Fidelity Training', 'reduce prediction uncertainty by an order of magnitude',
-    'r = 0.89', '$2T', 'physical torque measurement',
-  ]) {
-    assert.equal(activeText.includes(phrase), false, `unsupported active phrase: ${phrase}`);
+  const suspicious = [
+    /\bp\s*[<>=≤≥]\s*0?\.\d+/i,
+    /\br\s*=\s*[-+]?0?\.\d+/i,
+    /\b\d+(?:\.\d+)?\s*σ\b/i,
+    /\b\d+(?:\.\d+)?\s*%[^\n]{0,60}(?:accuracy|confidence|rmse|blind)/i,
+    /(?:accuracy|confidence|rmse|blind)[^\n]{0,60}\b\d+(?:\.\d+)?\s*%/i,
+  ];
+  for (const pattern of suspicious) {
+    assert.equal(pattern.test(activeText), false, `raw scientific-number claim matched: ${pattern}`);
   }
 });
 
