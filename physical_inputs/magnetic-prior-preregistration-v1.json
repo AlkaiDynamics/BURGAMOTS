@@ -1,0 +1,74 @@
+{
+  "record_id": "BURGAMOTS_MAGNETIC_PRIOR_PREREG_v1",
+  "version": "1.0.0",
+  "status": "FROZEN_PREREGISTRATION_PENDING_ADMIT",
+  "profile": {
+    "theta_definition": "colatitude_radians_north_pole_zero",
+    "formula": "B_phi0(theta; A)=A*sin(2*theta)",
+    "units": "kG",
+    "pole_regularity": "O(sin(theta))"
+  },
+  "candidate_amplitudes": [
+    {
+      "kind": "fixed",
+      "value_kG": 0.0,
+      "role": "hydrodynamic reference"
+    },
+    {
+      "kind": "derived",
+      "symbol": "A_eq",
+      "role": "integrated equipartition anchor"
+    },
+    {
+      "kind": "fixed",
+      "value_kG": 50.0,
+      "role": "preregistered regime anchor"
+    },
+    {
+      "kind": "fixed",
+      "value_kG": 100.0,
+      "role": "preregistered regime anchor"
+    },
+    {
+      "kind": "fixed",
+      "value_kG": 300.0,
+      "role": "preregistered upper envelope"
+    }
+  ],
+  "A_eq_definition": "sqrt(mu0*rho0 * integral(H0*U_sh^2 dA) / integral(H0*sin(2theta)^2 dA))",
+  "A_eq_rule": {
+    "omit_if_greater_than_kG": 300.0,
+    "clip": false,
+    "collapse_duplicates": true
+  },
+  "admission_rule": {
+    "formula": "ADMIT(A)=MAG1(A) AND SW_GEOM(A) AND EQRES(A)",
+    "MAG1": "pole regularity and finite magnetic-energy representation",
+    "SW_GEOM": "min_theta(H0+eta0_A)>0 and thin-shell geometry remains admissible",
+    "EQRES": "gstar*deta0_A/dtheta - ((U0^2-vA^2)*cot(theta)+2*Omega_frame*r_t*U0*cos(theta)) = 0 within the frozen numerical equilibrium criterion",
+    "outcome_use_prohibited": true
+  },
+  "provenance": [
+    {
+      "scope": "100 kG anchor",
+      "citation": "Dikpati (2006), The importance of the solar tachocline, Advances in Space Research 38:839-844, DOI 10.1016/j.asr.2005.07.016; Gilman & Rempel (2005), ApJ 630:615-622, DOI 10.1086/431929.",
+      "claim": "~100 kG is a standard strong-toroidal-field tachocline regime in flux-emergence/dynamo literature."
+    },
+    {
+      "scope": "300 kG upper envelope",
+      "citation": "Multilayer Magnetohydrodynamic Shallow-water Model of the Solar Tachocline: Equilibrium Shape and Thickness, ApJ, DOI 10.3847/1538-4357/ae314e.",
+      "claim": "Recent helioseismic discussion states that tachocline toroidal amplitudes are poorly constrained and that less than ~300 kG is the strongest broad bound that can be asserted."
+    },
+    {
+      "scope": "50 kG anchor",
+      "citation": "Preregistered intermediate regime anchor, not asserted as a direct observational estimate.",
+      "claim": "Included before BURGAMOTS outcomes to span the independently motivated strong-field regime."
+    }
+  ],
+  "content_sha256": "0dd67a7cc5aff46934b27c735f80d40f08c2553072fea6a97fb9876243821823",
+  "outcome_independence": {
+    "burgamots_response_used": false,
+    "posthoc_member_selection_allowed": false,
+    "selection_basis": "Candidate amplitudes and ADMIT rule were preregistered before any physical BURGAMOTS response run."
+  }
+}
