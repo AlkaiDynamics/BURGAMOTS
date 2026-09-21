@@ -78,6 +78,11 @@ def test_semidiscrete_cancellation():
     def rot(v):
         return cross(n, v)
 
+    strict_solver_params = {
+        "ksp_rtol": 1.0e-14,
+        "ksp_atol": 1.0e-15,
+    }
+
     # 2. Frozen compatible complex.
     spaces = Spaces(mesh)
     spaces.build_compatible_spaces(
@@ -150,6 +155,7 @@ def test_semidiscrete_cancellation():
         ==
         H_h * inner(u_h, w) * dxq,
         U_h,
+        solver_parameters=strict_solver_params,
     )
 
     # -------------------------
@@ -170,6 +176,7 @@ def test_semidiscrete_cancellation():
         ==
         phi * K_rhs * dxq,
         K_h,
+        solver_parameters=strict_solver_params,
     )
 
     # -------------------------
@@ -183,6 +190,7 @@ def test_semidiscrete_cancellation():
         ==
         inner(grad(gamma), grad(A_h)) / (kappa * H_h) * dxq,
         M_h,
+        solver_parameters=strict_solver_params,
     )
 
     # -------------------------
@@ -265,6 +273,7 @@ def test_semidiscrete_cancellation():
         ==
         sd1_rhs * dxq,
         du_h,
+        solver_parameters=strict_solver_params,
     )
 
     # -------------------------
@@ -278,6 +287,7 @@ def test_semidiscrete_cancellation():
         ==
         -phi * div(U_h) * dxq,
         dH_h,
+        solver_parameters=strict_solver_params,
     )
 
     # -------------------------
