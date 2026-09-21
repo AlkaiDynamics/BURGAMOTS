@@ -184,21 +184,51 @@ def test_semidiscrete_cancellation():
     # -------------------------
     # Stage 1: direct bracket/form cancellation
     # -------------------------
-    C_h_val = assemble(
-        (
-            -q_h * inner(U_h, rot(U_h))
-            + div(U_h) * K_h
-            - K_h * div(U_h)
-            + (M_h / H_h) * inner(grad(A_h), U_h)
-            - M_h * inner(U_h / H_h, grad(A_h))
-        ) * dxq
+    vort_term = float(assemble((-q_h * inner(U_h, rot(U_h))) * dxq))
+    mass_plus = float(assemble((div(U_h) * K_h) * dxq))
+    mass_minus = float(assemble((-K_h * div(U_h)) * dxq))
+    mag_plus = float(
+        assemble(((M_h / H_h) * inner(grad(A_h), U_h)) * dxq)
+    )
+    mag_minus = float(
+        assemble((-M_h * inner(U_h / H_h, grad(A_h))) * dxq)
     )
 
-    C_abs = abs(float(C_h_val))
-    print(f"STAGE 1 (Form/Bracket C_h) = {C_abs:.17e}")
+    C_h_val = float(
+        assemble(
+            (
+                -q_h * inner(U_h, rot(U_h))
+                + div(U_h) * K_h
+                - K_h * div(U_h)
+                + (M_h / H_h) * inner(grad(A_h), U_h)
+                - M_h * inner(U_h / H_h, grad(A_h))
+            ) * dxq
+        )
+    )
+
+    component_scale = (
+        abs(vort_term)
+        + abs(mass_plus)
+        + abs(mass_minus)
+        + abs(mag_plus)
+        + abs(mag_minus)
+    )
+    relative_C = abs(C_h_val) / max(component_scale, 1.0)
+
+    print(f"STAGE 1 vorticity term       = {vort_term:.17e}")
+    print(f"STAGE 1 mass plus            = {mass_plus:.17e}")
+    print(f"STAGE 1 mass minus           = {mass_minus:.17e}")
+    print(f"STAGE 1 magnetic plus        = {mag_plus:.17e}")
+    print(f"STAGE 1 magnetic minus       = {mag_minus:.17e}")
+    print(f"STAGE 1 component scale      = {component_scale:.17e}")
+    print(f"STAGE 1 direct C_h           = {C_h_val:.17e}")
+    print(f"STAGE 1 relative cancellation= {relative_C:.17e}")
+
+    C_abs = abs(C_h_val)
     require(
         C_abs < TOL,
-        f"FORM/BRACKET IMPLEMENTATION FAILURE: |C_h|={C_abs} >= {TOL}",
+        f"FORM/BRACKET IMPLEMENTATION FAILURE: |C_h|={C_abs} >= {TOL}; "
+        f"relative={relative_C}",
     )
 
     # -------------------------
