@@ -184,6 +184,7 @@ IMPLEMENTATION_PLAN.md
 IMPLEMENTATION_REVIEW.md
 IMPLEMENTATION_REPORT.md
 BURGAMOTS_SOLAR_RESPONSE_SPEC_v1.md
+BURGAMOTS_BASESTATE_PROTOCOL_v1.md
 audit/2026-09-12/
 ```
 
@@ -197,4 +198,4 @@ No scientific experiment, empirical dataset acquisition, confirmatory statistica
 
 ## Scientific checkpoint
 
-The forcing layer is locked as `BURGAMOTS_FORCING_LEDGER_v1`, and `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1.md` freezes `BURGAMOTS_TACH_SWMHD_v1` at the equation/forcing-contract level. The next scientific unit is `BURGAMOTS_TACH_EXPERIMENT_PROTOCOL_v1`, which must freeze the initial/base state and numerical experiment protocol before any solver/PINN donor is selected. SUN comparison remains out of scope.
+The forcing layer is locked as `BURGAMOTS_FORCING_LEDGER_v1`. `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1.md` freezes `BURGAMOTS_TACH_SWMHD_v1`, and `BURGAMOTS_BASESTATE_PROTOCOL_v1.md` freezes the admissible base-state family plus M0/M1/control semantics. The next scientific unit is `BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1`, which must freeze the discrete solver/invariant/convergence contract before any implementation donor is selected. SUN comparison remains out of scope.
