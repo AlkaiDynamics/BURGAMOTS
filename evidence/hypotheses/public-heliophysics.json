@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "public-heliophysics-proposal",
+  "title": "Public heliophysics proposal",
+  "originalPurpose": "Evaluate the separately presented public proposal that planetary gravitational or barycentric features may improve heliospheric or terrestrial predictive models; this proposal is not evidence for the original BURGAMOTS falsification target.",
+  "nullHypothesis": null,
+  "alternativeHypothesis": null,
+  "targetOutcome": null,
+  "unitOfAnalysis": null,
+  "independentUnit": null,
+  "populationSamplingFrame": null,
+  "estimand": null,
+  "evaluationPolicy": null,
+  "primaryComparisonControlFamily": null,
+  "status": "BLOCKED",
+  "unresolvedFields": ["targetOutcome","unitOfAnalysis","independentUnit","populationSamplingFrame","estimand","evaluationPolicy","primaryComparisonControlFamily","physicalMechanismSpecification"],
+  "allowedClaims": ["Public heliophysics proposal recorded separately","Scientific execution blocked pending approved scientific contract"],
+  "prohibitedClaims": ["validated","significant","causal","blind test","DeepXDE active","physical torque measured"]
+}

@@ -1,0 +1,95 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createReferenceRegistry, loadResultManifest } from '../evidence/resultLoader.js';
+
+const resultSchema = JSON.parse(readFileSync(new URL('../contracts/analysis-result.schema.json', import.meta.url), 'utf8'));
+const load = (record, options = {}) => loadResultManifest(record, { ...options, schema: resultSchema });
+const fixtureHash = 'a'.repeat(64);
+
+const blockedRecord = {
+  schemaVersion: '1.0.0', resultId: 'blocked-1', hypothesisId: 'burgamots-original-purpose', status: 'BLOCKED',
+  fixture: false, datasetManifestId: null, datasetManifestHash: null, evaluationBoundaryId: null, analysisConfigId: null, runMetadataId: null,
+  method: null, seed: null, sample: { n: null, independentN: null }, estimate: null, uncertainty: null,
+  pValue: null, multiplicity: null, limitations: ['Scientific execution remains blocked.'], evidenceRefs: [], reviewEvidenceRefs: []
+};
+
+test('result loading fails closed when runtime schema is omitted', () => {
+  const loaded = loadResultManifest(blockedRecord);
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /schema is required/i.test(error)));
+});
+
+test('blocked result preserves null scientific values', () => {
+  const loaded = load(blockedRecord);
+  assert.equal(loaded.ok, true);
+  assert.equal(loaded.result.estimate, null);
+  assert.equal(loaded.result.pValue, null);
+  assert.equal(loaded.claimStatus.state, 'BLOCKED');
+});
+
+test('fixture cannot be marked empirical/evaluated', () => {
+  const loaded = load({
+    schemaVersion: '1.0.0', resultId: 'fixture-1', hypothesisId: 'burgamots-original-purpose', status: 'EVALUATED',
+    fixture: true, datasetManifestId: 'fixture-data', datasetManifestHash: fixtureHash, evaluationBoundaryId: 'boundary-1', analysisConfigId: 'config-1', runMetadataId: 'run-1',
+    method: 'fixture', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['fixture'], reviewEvidenceRefs: []
+  });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /fixture/i.test(error)));
+});
+
+test('result cannot attach evidence to a different hypothesis', () => {
+  const loaded = load({
+    schemaVersion: '1.0.0', resultId: 'cross-1', hypothesisId: 'public-heliophysics-proposal', status: 'EVALUATED',
+    fixture: false, datasetManifestId: 'dataset-original-only', datasetManifestHash: fixtureHash, evaluationBoundaryId: 'boundary-1', analysisConfigId: 'config-original', runMetadataId: 'run-1',
+    method: 'test', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['hypothesis:burgamots-original-purpose'], reviewEvidenceRefs: []
+  });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /hypothesis/i.test(error)));
+});
+
+test('evaluated result with unknown evidence references fails closed', () => {
+  const loaded = load({
+    schemaVersion: '1.0.0', resultId: 'unknown-refs', hypothesisId: 'burgamots-original-purpose', status: 'EVALUATED',
+    fixture: false, datasetManifestId: 'missing-dataset', datasetManifestHash: fixtureHash, evaluationBoundaryId: 'missing-boundary', analysisConfigId: 'missing-analysis', runMetadataId: 'missing-run',
+    method: 'test', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['hypothesis:burgamots-original-purpose'], reviewEvidenceRefs: []
+  });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /unknown reference/i.test(error)));
+});
+
+test('scientific executor cannot self-assign validation without review evidence', () => {
+  const loaded = load({
+    schemaVersion: '1.0.0', resultId: 'validated-without-review', hypothesisId: 'public-heliophysics-proposal', status: 'VALIDATED',
+    fixture: false, datasetManifestId: 'd', datasetManifestHash: fixtureHash, evaluationBoundaryId: 'b', analysisConfigId: 'a', runMetadataId: 'r',
+    method: 'executor', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['hypothesis:public-heliophysics-proposal'], reviewEvidenceRefs: []
+  });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /review/i.test(error)));
+});
+
+test('result cannot survive a changed dataset-manifest hash', () => {
+  const expectedHash = 'a'.repeat(64);
+  const changedHash = 'b'.repeat(64);
+  const registry = createReferenceRegistry({
+    hypotheses: new Set(['burgamots-original-purpose']),
+    datasets: new Map([['dataset-1', { empiricalReady: true, manifestHash: expectedHash }]]),
+    boundaries: new Map([['boundary-1', { valid: true }]]),
+    analysisConfigs: new Map([['analysis-1', { valid: true }]]),
+    runs: new Map([['run-1', { valid: true }]]),
+    reviews: new Set(),
+  });
+  const loaded = load({
+    schemaVersion: '1.0.0', resultId: 'changed-dataset', hypothesisId: 'burgamots-original-purpose', status: 'EVALUATED',
+    fixture: false, datasetManifestId: 'dataset-1', datasetManifestHash: changedHash,
+    evaluationBoundaryId: 'boundary-1', analysisConfigId: 'analysis-1', runMetadataId: 'run-1',
+    method: 'test', seed: 1, sample: { n: 10, independentN: 10 }, estimate: 1, uncertainty: null,
+    pValue: null, multiplicity: null, limitations: [], evidenceRefs: ['hypothesis:burgamots-original-purpose'], reviewEvidenceRefs: []
+  }, { registry });
+  assert.equal(loaded.ok, false);
+  assert.ok(loaded.errors.some((error) => /dataset manifest hash mismatch/i.test(error)), loaded.errors.join('\n'));
+});

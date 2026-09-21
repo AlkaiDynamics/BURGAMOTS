@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0.0",
+  "resultId": "original-purpose-blocked",
+  "hypothesisId": "burgamots-original-purpose",
+  "status": "BLOCKED",
+  "fixture": false,
+  "datasetManifestId": null,
+  "datasetManifestHash": null,
+  "evaluationBoundaryId": null,
+  "analysisConfigId": null,
+  "runMetadataId": null,
+  "method": null,
+  "seed": null,
+  "sample": { "n": null, "independentN": null },
+  "estimate": null,
+  "uncertainty": null,
+  "pValue": null,
+  "multiplicity": null,
+  "limitations": [
+    "Scientific execution remains blocked pending UD-001, UD-002, UD-003, and UD-004."
+  ],
+  "evidenceRefs": ["hypothesis:burgamots-original-purpose"],
+  "reviewEvidenceRefs": []
+}

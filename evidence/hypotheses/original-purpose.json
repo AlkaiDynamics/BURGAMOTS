@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "id": "burgamots-original-purpose",
+  "title": "Original BURGAMOTS falsification target",
+  "originalPurpose": "Determine whether a prespecified zodiacal or independently derived astronomical-relational representation provides reproducible incremental out-of-sample predictive information beyond ordinary astronomical state, temporal or seasonal structure, and appropriate negative controls.",
+  "nullHypothesis": null,
+  "alternativeHypothesis": null,
+  "targetOutcome": null,
+  "unitOfAnalysis": null,
+  "independentUnit": null,
+  "populationSamplingFrame": null,
+  "estimand": null,
+  "evaluationPolicy": null,
+  "primaryComparisonControlFamily": null,
+  "status": "BLOCKED",
+  "unresolvedFields": ["targetOutcome","unitOfAnalysis","independentUnit","populationSamplingFrame","estimand","evaluationPolicy","primaryComparisonControlFamily","numericalRejectionThreshold"],
+  "allowedClaims": ["Original falsification purpose recorded","Scientific execution blocked pending UD-001 through UD-004"],
+  "prohibitedClaims": ["validated","significant","causal","blind test","prospective superiority"]
+}

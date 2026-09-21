@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/transformation.schema.json",
+  "title":"TransformationRecord",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","id","step","codeVersion","parameters","inputHash","outputHash"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"id":{"type":"string","minLength":1},"step":{"type":"string","minLength":1},
+    "codeVersion":{"type":"string","minLength":1},"parameters":{"type":"object"},
+    "inputHash":{"type":["string","null"]},"outputHash":{"type":["string","null"]}
+  }
+}

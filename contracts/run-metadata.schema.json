@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/run-metadata.schema.json",
+  "title":"RunMetadata",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","id","analysisConfigId","datasetManifestId","evaluationBoundaryId","repositoryCommit","environment","seed","backend","determinismPolicy","startedAt","completedAt"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"id":{"type":"string","minLength":1},"analysisConfigId":{"type":"string","minLength":1},
+    "datasetManifestId":{"type":["string","null"]},"evaluationBoundaryId":{"type":["string","null"]},"repositoryCommit":{"type":"string","minLength":1},
+    "environment":{"type":"object"},"seed":{"type":["integer","null"]},"backend":{"type":"string","minLength":1},
+    "determinismPolicy":{"type":"string","minLength":1},"startedAt":{"type":["string","null"]},"completedAt":{"type":["string","null"]}
+  }
+}

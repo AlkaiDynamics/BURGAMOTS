@@ -1,5 +1,5 @@
 {
-  "name": "BURGAMOTS Survey",
-  "description": "A deterministic framework for heliospheric prediction addressing stochastic model failures through integrated gravitational forcing.",
+  "name": "BURGAMOTS Evidence-Integrity Successor",
+  "description": "An evidence-bounded research interface that preserves the audited historical prototype while keeping scientific hypotheses blocked until approved data, controls, and evaluation policies exist.",
   "requestFramePermissions": []
 }

@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://alkai-dynamics.example/contracts/dataset.schema.json",
+  "title":"DatasetManifest",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","datasetId","source","sourceUrl","acquired","retrievedAt","version","license","rawFiles","transformations","exclusions"],
+  "properties":{
+    "schemaVersion":{"type":"string"},"datasetId":{"type":"string","minLength":1},"source":{"type":"string","minLength":1},
+    "sourceUrl":{"type":["string","null"]},"acquired":{"type":"boolean"},"retrievedAt":{"type":["string","null"]},
+    "version":{"type":["string","null"]},"license":{"type":["string","null"]},
+    "rawFiles":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["fileId","path","sha256"],"properties":{"fileId":{"type":"string"},"path":{"type":"string"},"sha256":{"type":["string","null"]}}}},
+    "transformations":{"type":"array"},"exclusions":{"type":"array"}
+  }
+}
