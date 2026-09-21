@@ -36,6 +36,14 @@ from firedrake import (
 )
 from gusto.core.domain import Domain
 from petsc4py import PETSc
+from ufl import (
+    Jacobian,
+    JacobianDeterminant,
+    ReferenceGrad,
+    ReferenceValue,
+    as_vector,
+    dot,
+)
 
 
 GUSTO_PINNED_COMMIT = "669f6372cd334ed47c9c7b38f26e591732273f75"
