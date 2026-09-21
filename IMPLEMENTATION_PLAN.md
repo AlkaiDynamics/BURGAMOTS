@@ -6,8 +6,6 @@
 - Successor: `refactor/evidence-integrity`
 - Audit: `audit/2026-09-12/`
 - Reasoning: `REFRACTOR_REASONING.md`
-- Frozen solar source blob: `e56d956cf927c56b24543259ccee9475ab41d6b6`
-- Protected archive: `protected/solar-visualization-frozen-8a9029b6.tsx`
 
 ## Discovery inventory
 
@@ -34,18 +32,13 @@
 
 `UD-001` target/unit/estimand; `UD-002` authoritative data; `UD-003` primary null/control family; `UD-004` evaluation/confirmatory policy. The real scientific experiment remains blocked while any is unresolved.
 
-## Solar visualization archive policy
+## Legacy demo purge policy
 
-The exact frozen `SolarSystemViz.tsx` implementation is preserved at `protected/solar-visualization-frozen-8a9029b6.tsx` using the same Git blob as the audited baseline. It is retained as protected source for possible AYLI/product reuse.
+The user has superseded the earlier in-repository visualization-preservation policy. Obsolete demo-era scientific-looking numbers, validation-style components, synthetic cycle claims, and dormant visualization source are to be removed from the BURGAMOTS successor branch.
 
-This archive constraint is intentionally separate from the active BURGAMOTS application. BURGAMOTS is **not required** to keep `SolarSystemViz.tsx` mounted or to preserve the historical visualization inside the current paper/app. The active application may retain or remove it according to evidence-integrity needs, provided that:
+The immutable historical audit under `audit/2026-09-12/` remains the only in-repository record of those purged claims. No active source, fixture, current documentation, or scientific result path may depend on them.
 
-- The protected archive remains byte-identical to the frozen source.
-- The scientific evidence pipeline does not depend on the archived visualization.
-- No active claim treats the synthetic cycle driver as measured physical torque or empirical evidence.
-- Removal from the active app does not delete or rewrite the protected archive.
-
-Do not replace the protected archive with a reconstructed or simplified version. Any future migration of the visualization into AYLI should use the protected source, not the audit narrative.
+The purge is enforced by `npm run audit:legacy-numbers`.
 
 ## Selected architecture
 
@@ -61,18 +54,6 @@ frozen audit
   → React UI
 ```
 
-The archived solar visualization is outside the evidence pipeline:
-
-```text
-protected solar archive (AYLI-bound/product preservation)
-  └─ no scientific claim authority
-
-scientific evidence pipeline
-  → contracts/provenance/boundaries/results
-  → derived view model
-  → active BURGAMOTS UI
-```
-
 No real dataset, statistical method, physical torque model, DeepXDE runtime, or scientific result is selected in this phase.
 
 ## Change plan
@@ -80,9 +61,9 @@ No real dataset, statistical method, physical torque model, DeepXDE runtime, or 
 1. **Contracts** — Add language-neutral JSON Schemas for hypothesis, dataset, transformation, boundary, leakage check, analysis config, run metadata, result and claim status; add fail-closed runtime validation.
 2. **Claim policy** — Centralize `BLOCKED`, `ILLUSTRATIVE`, `EXPLORATORY`, `NEGATIVE_NULL_FAVORING`, `EVALUATED`, `VALIDATED`, `UNRESOLVED`; prohibit unsupported promotion; isolate original-purpose and public-heliophysics IDs.
 3. **Provenance/boundary/executor** — Validate hashes/reference chains and boundary invariants; create executor interface only. Historical leakage remains unresolved.
-4. **Solar archive preservation** — Keep the exact frozen visualization in `protected/`; do not make the scientific evidence pipeline depend on it. Active BURGAMOTS may omit the visualization.
+4. **Legacy demo purge** — Remove obsolete demo numeric claims and dormant claim-bearing components from the successor branch while preserving the immutable audit record.
 5. **UI conversion** — Remove hardcoded validation/performance presentation from active claim paths. Present the original-purpose hypothesis as `BLOCKED`, the public heliophysics proposal as a separate `BLOCKED` record, absent scientific systems as `PROPOSED — NOT CURRENTLY IMPLEMENTED`, and scientific numbers only through validated result manifests or explicit illustrative fixtures.
-6. **Verification harness** — Use Node’s built-in test runner and repository scripts; add contract/policy/provenance/boundary/fixture/claim tests, `reproduce`, fail-closed `verify`, and protected-archive regression tests. No scientific dependency is added.
+6. **Verification harness** — Use Node’s built-in test runner and repository scripts; add contract/policy/provenance/boundary/fixture/claim tests, `reproduce`, fail-closed `verify`, and a repository-wide legacy-number purge audit. No scientific dependency is added.
 7. **Documentation/review** — Rewrite active README/metadata only after runtime behavior is stable; create `IMPLEMENTATION_REVIEW.md` and `IMPLEMENTATION_REPORT.md` after verification.
 
 ## Vercel compatibility
@@ -99,4 +80,8 @@ Stop before any action that would:
 - Add DeepXDE/Python scientific packages.
 - Change Vercel project/dashboard settings.
 - Invent scientific thresholds/results/provenance.
-- Delete, rewrite, or reconstruct the protected frozen solar archive.
+- Reintroduce purged demo-era scientific-looking numbers or synthetic claim terminology outside the immutable audit record.
+
+## Scientific handoff after integrity cleanup
+
+The forcing layer is frozen as `BURGAMOTS_FORCING_LEDGER_v1`. The next scientific unit of work is `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1`, which must define allowed forcing-ledger inputs, solar state variables, governing response physics, and null-versus-forced experiment design before any solver or PINN architecture is selected. The forcing object itself is not to be modified, and SUN comparison remains out of scope at this checkpoint.
