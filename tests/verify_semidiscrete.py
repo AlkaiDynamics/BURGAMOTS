@@ -42,6 +42,12 @@ from firedrake import (
 )
 from gusto.core.function_spaces import Spaces
 
+from numerics.coefficient_centering import (
+    coefficient_anomaly,
+    exact_background_field,
+    centered_gravity_d2,
+)
+
 
 STAGE1_ABS_TOL = 1.0e-12
 STAGE1_REL_TOL = 1.0e-15
@@ -118,6 +124,10 @@ def test_semidiscrete_cancellation():
 
     require(float(np.min(H_data)) > 0.0, "deterministic probe state is not positive")
 
+    # Amendment A1: derived coefficient-space anomaly in the same DG1 space.
+    H0_h = exact_background_field(V2, 1000.0, name="H0_h")
+    eta_h = coefficient_anomaly(H_h, H0_h, name="eta_h")
+
     # 4. Runner-verified compatible magnetic map.
     m_h = Function(V1, name="MagneticFlux")
     m_h.interpolate(cross(n, grad(A_h)))
@@ -169,7 +179,7 @@ def test_semidiscrete_cancellation():
     K_rhs = (
         0.5 * inner(u_h, u_h)
         - inner(m_h, m_h) / (2.0 * kappa * H_h**2)
-        + gstar * H_h
+        + centered_gravity_d2(eta_h, gstar)
     )
 
     solve(
