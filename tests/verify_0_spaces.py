@@ -29,6 +29,7 @@ from firedrake import (
     div,
     dx,
     grad,
+    curl,
     inner,
     sqrt,
 )
@@ -137,7 +138,9 @@ def test_verify_0():
     # into the target BDFM degrees of freedom. It is not an L2 projection or
     # mass-matrix solve.
     m_h = Function(V1, name="m_h_probe")
-    m_h.interpolate(domain.perp(grad(A_h)))
+    # Use Firedrake/UFL's de Rham curl of the scalar 0-form rather than
+    # an extrinsic normal-cross-gradient reconstruction.
+    m_h.interpolate(curl(A_h))
 
     phi = TestFunction(V2)
     div_residual = assemble(phi * div(m_h) * dxq)
@@ -178,7 +181,7 @@ def test_verify_0():
 
     # The zero flux potential must map to zero magnetic flux.
     m_zero = Function(V1, name="m_h_zero")
-    m_zero.interpolate(domain.perp(grad(A_zero)))
+    m_zero.interpolate(curl(A_zero))
     magnetic_zero = sqrt(assemble(inner(m_zero, m_zero) * dxq))
 
     print(f"VERIFY-0 zero velocity residual:  {velocity_norm:.17e}")
