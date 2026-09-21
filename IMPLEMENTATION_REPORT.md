@@ -27,7 +27,6 @@
 - `audit/2026-09-12/REPRODUCTION_LOG.md`
 - `REFRACTOR_REASONING.md`
 - `IMPLEMENTATION_PLAN.md`
-- `SOLAR_VISUALIZATION_BACKUP_REPORT.md`
 - `IMPLEMENTATION_REVIEW.md`
 - `IMPLEMENTATION_REPORT.md`
 
@@ -62,7 +61,6 @@
 ### Active UI and protected source
 
 - `components/EvidencePanel.tsx`
-- `protected/solar-visualization-frozen-8a9029b6.tsx`
 
 ### Verification and CI
 
@@ -72,7 +70,6 @@
 - `scripts/audit-fixtures.mjs`
 - `scripts/audit-leakage.mjs`
 - `scripts/audit-provenance.mjs`
-- `scripts/audit-solar-backup.mjs`
 - `scripts/harness-invalid-fixture.mjs`
 - `scripts/prebuild-integrity.mjs`
 - `scripts/reproduce.mjs`
@@ -83,7 +80,6 @@
 - `tests/fixtures/harness-invalid.json`
 - `tests/provenance-boundary.test.mjs`
 - `tests/result-loader.test.mjs`
-- `tests/solar-visualization-preservation.test.mjs`
 - `tests/ui-integrity.test.mjs`
 - `tests/view-model.test.mjs`
 
@@ -110,7 +106,7 @@ No historical source file was deleted from the repository. The active `App.tsx` 
 - `PipelineDiagram`
 - historical `Hero`, `Navigation`, and `Timeline` presentation paths
 
-These sources remain available as history/provenance where present. The frozen solar visualization is additionally preserved byte-for-byte under `protected/`.
+These legacy claim-bearing source files were subsequently purged from the successor branch at the user's direction. The immutable audit directory remains the historical record.
 
 ## Change-to-finding traceability
 
@@ -178,15 +174,10 @@ Addresses active presentation consequences of:
 
 Effect: historical empirical-looking arrays/paper/model labels are outside the active claim path; active UI shows blocked hypotheses, unresolved fields, proposed architecture, and explicit limitations through derived view models.
 
-### C6 — Synthetic visualization / solar archive boundary
+### C6 — Legacy demo purge
 
-Artifacts: protected frozen source, preservation tests, solar hash audit/report; active App does not mount the historical visualization.
+Artifacts: repository-wide purge audit plus removal of dormant claim-bearing demo components. The immutable audit remains untouched.
 
-Addresses active integrity consequences of:
-- `I-003`, `I-004`, `I-005`, `I-006`, `I-007`
-- `U-004`, `U-006`
-
-Effect: exact historical visualization source is preserved for possible AYLI/product reuse without granting it scientific-evidence authority. The active BURGAMOTS claim path does not expose the historical synthetic cycle driver as physical measurement or validation.
 
 ### C7 — Documentation and dependency/environment integrity
 
@@ -240,7 +231,7 @@ The executed suite contains 61 passing tests covering:
 - Boundary record/group overlap and immutability.
 - Historical leakage remaining unresolved.
 - Result-loader fail-closed behavior.
-- Frozen solar-source preservation and evidence decoupling.
+- Legacy demo numeric/claim-bearing source purge outside the immutable audit record.
 - Active UI manifest/view-model routing and null preservation.
 
 ## Verification commands and results
@@ -261,7 +252,7 @@ Verified runtime implementation: `bdb3a64e50df71930cce3d8a67a0fc6d72523235`.
 | `npm run audit:leakage` | PASS; historical leakage explicitly remains `UNRESOLVED`. |
 | `npm run audit:claims` | PASS. |
 | `npm run audit:env` | PASS; no active client environment access. |
-| `npm run audit:solar-backup` | PASS; Git blob `e56d956cf927c56b24543259ccee9475ab41d6b6`; SHA-256 `4d0efb7144d437f66625bdaadd357b8e8e76c605e9870164f15eff81ee820180`. |
+| `npm run audit:legacy-numbers` | PASS required; fails if legacy demo numeric claim forms or terminology re-enter the non-audit project surface. |
 | `npm run reproduce` | PASS; both scientific hypothesis records remain `BLOCKED`; historical leakage remains `UNRESOLVED`; no science executed. |
 | `npm run verify` equivalent in prebuild mode | PASS; all integrity commands completed before build. |
 | `npm run build` | PASS — Vite transformed 1481 modules and produced the static bundle. |
@@ -275,7 +266,7 @@ These are retained because hiding them would undermine the purpose of the refact
 1. An early attempt to route the browser UI through `resultLoader.js` imported `node:fs`; Vercel correctly failed the build. The loader was changed to require runtime schema injection, preserving validation without a Node filesystem dependency in the client bundle.
 2. Once the integrity prebuild was activated, TypeScript failed on dormant/frozen historical files. The fix was **not** to rewrite the protected history; `tsconfig.json` was scoped to the active successor runtime, while separate audits enforce that dormant files cannot re-enter the active claim path.
 3. The adversarial review exposed that empirical results were initially bound only to dataset ID, not dataset-manifest content. A RED test demonstrated the gap; result manifests now require a matching dataset-manifest SHA-256 for empirical states.
-4. The solar visualization preservation policy changed during implementation. The exact frozen source is now preserved for possible AYLI reuse, while active BURGAMOTS is free to omit it. The evidence pipeline is tested to remain independent from that archive.
+4. The earlier in-repository solar-visualization preservation policy was later superseded by an explicit user purge instruction; the dormant claim-bearing visualization source and preservation hooks were removed from the successor branch while the immutable audit record was retained.
 5. GitHub-hosted Actions jobs did not supply a reliable execution surface. Rather than treating queued/zero-step jobs as success, the static Vercel build was made fail-closed: it runs harness self-tests and the integrity suite before Vite is allowed to build.
 
 ## New dependencies
@@ -293,7 +284,6 @@ The active application may state that:
 - No inspectable empirical result is currently available for those blocked records.
 - Historical leakage remains `UNRESOLVED`.
 - Evidence contracts, claim-state controls, provenance checks, successor boundary invariants, result hash binding, view-model routing, and verification controls are implemented and tested within their stated scope.
-- The protected solar visualization file is an exact archived copy of the frozen source.
 - Proposed scientific architecture is proposed and not currently implemented.
 
 ## Scientific claims currently prohibited
@@ -333,7 +323,7 @@ The active application must not present as established any claim of:
 - Negative/null-favoring results can be represented without positive reframing.
 - Active React scientific presentation is derived from evidence view models rather than historical hardcoded result components.
 - Historical validation/paper/model components are outside the active claim path.
-- The frozen solar visualization source is preserved exactly and is decoupled from scientific evidence state.
+- Purged demo-era scientific-looking numbers and dormant claim-bearing visualization sources are absent from the successor product surface; the audit record remains separate.
 - Active client source has no environment-variable access.
 - The fail-closed harness rejects an invalid fixture and propagates an injected failure.
 - The executed verification run passed 61/61 tests, all integrity audits, blocked-state reproduction, and the production Vite build on the verified preview implementation commit.
@@ -348,7 +338,7 @@ The active application must not present as established any claim of:
 - Physical torque measurement is not established.
 - Prospective predictive superiority is not established.
 - DeepXDE/PINN scientific execution is not established.
-- JPL/N-body scientific fidelity is not established for the archived visualizer.
+- No claim of JPL/N-body scientific fidelity is established by this refactor.
 - Economic or operational utility is not established.
 - A real empirical dataset, model, statistical method, or confirmatory result was not created.
 - A successful build/deployment does not establish scientific validity.
@@ -365,3 +355,7 @@ The active application must not present as established any claim of:
 - No source or dataset not actually acquired and hashed is treated as empirical evidence.
 - GitHub-hosted Actions execution remained unavailable/queued during the verified session; no GitHub Actions success is claimed.
 - Production/main deployment and merge remain unperformed and require explicit user authorization.
+
+## Subsequent scientific checkpoint
+
+The forcing model is frozen as `BURGAMOTS_FORCING_LEDGER_v1`. The next authorized scientific design unit is `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1`. This report does not select a PINN, MHD solver, SUN mapping, or any trainable response parameter, and none may redefine the forcing ledger.
