@@ -1,92 +1,169 @@
 # BURGAMOTS BASE-P status report
 
-## Scope boundary
+## Current status
 
-Authorized phase:
+[
+\boxed{\texttt{BASE-KKT-0: PASSED}}
+]
 
-```math
-\boxed{\texttt{BASE-P ONLY}}
-```
+[
+\boxed{\texttt{BASE-PHYS: BLOCKED — MISSING FROZEN PHYSICAL INPUT RECORDS}}
+]
 
-No production timestepper work, `M1`, BURGAMOTS forcing ingestion, observational comparison, SUN analysis, merge, or deployment is included in this report.
+The hydro debugging sequence is closed. Numerical Amendment A1
+(`BURGAMOTS_NUMERICS_AMENDMENT_A1.md`) is adopted and authoritative.
 
 ## Frozen contracts preserved
 
-This report preserves the existing frozen contracts:
+The following remain authoritative:
 
 - `BURGAMOTS_FORCING_LEDGER_v1`: locked.
 - `BURGAMOTS_TACH_SWMHD_v1`: frozen.
 - `BURGAMOTS_BASESTATE_PROTOCOL_v1`: frozen.
-- `BURGAMOTS_NUMERICS_v1`: frozen.
-- Semidiscrete gate: runner-confirmed pass on run `35645988857`.
+- `BURGAMOTS_NUMERICS_v1`: frozen as amended by A1.
+- BASE-KKT-0 acceptance: (R_h^{M_0}<10^{-12}), unchanged.
+- Stage-2 semidiscrete acceptance criteria: unchanged.
 
-## Implemented gate: BASE-KKT-0
+A1 changes only the discrete gravitational Hamiltonian representative to the
+coefficient-space Casimir-centered form. It does not change the continuum
+equations, physical state, FE complex, mesh, quadrature, magnetic prior,
+forcing semantics, or the BASE-KKT-0 threshold.
 
-`tests/verify_base_p.py` implements the next BASE-P implementation gate after `BASE-TARGET-0`.
+## A1 adoption evidence
 
-It verifies the constrained stationary projection mechanics using a deliberately manufactured, non-solar stationary KKT family. The gate enforces:
+Binary amendment gate:
 
-```math
-R_h^{M_0}(\mathcal S_h)=0,
-```
+- workflow: `coefficient-centered-amendment-gate`;
+- run: `35660436424`;
+- tested commit: `b9ef759751a3cb4d3edf61882314fc414b9db6c4`;
+- conclusion: success.
 
-```math
-\int H_h\,dx_q=\int \widehat H_h\,dx_q,
-```
+For `kkt0_hydro_reference` under coefficient-space centering:
 
-```math
-\int A_h\,dx_q=0,
-```
+[
+\eta_h=0,qquad K_h=0,
+]
 
-```math
-H_h>0,
-```
+and
 
-and the frozen `BASE-D` metric.
+[
+\|\dot u_h\|_{L^2}
+=
+\|\dot H_h\|_{L^2}
+=
+\|\dot A_h\|_{L^2}
+=
+0.
+]
 
-The manufactured family contains three deterministic stationary members:
+Thus
 
-```text
-kkt0_hydro_reference
-kkt0_mass_high
-kkt0_mass_low
-```
+[
+\boxed{R_h^{M_0}=0<10^{-12}.}
+]
 
-These members are implementation witnesses for the constrained KKT machinery only. They are not physical solar magnetic-prior members.
+The same binary gate retained the existing Stage-2 criterion and measured
 
-## Physical BASE-PHYS status
+[
+R_2=2.48760511935473687\times10^{-17},
+]
 
-`BASE-PHYS` remains fail-closed / blocked.
+so the semidiscrete energy certification remained inside its frozen criterion.
 
-The repository does not yet contain both required frozen physical inputs:
+## Normal certification reruns after A1
 
-1. the externally supplied/frozen observational `Omega_0(theta)` record;
-2. the finite preregistered toroidal magnetic-prior family `mathfrak B_0`.
+### BASE-KKT-0
 
-Those inputs may not be invented by the numerical implementation and may not be selected using BURGAMOTS outcomes.
+Normal workflow:
 
-Therefore no physical representatives
+- workflow: `firedrake-base-p-gate`;
+- run: `35660880185`;
+- certification head: `3c5949327796c4fa4cdcf4775e5e6fd0f6452c02`;
+- conclusion: success.
 
-```math
-\mathcal S_{{\rm base},h}^{(k)}
-```
+Observed members:
 
-for the solar magnetic-prior ensemble are certified by this report.
+| Member | (R_h^{M_0}) | Mass error | Gauge | DIVB |
+|---|---:|---:|---:|---:|
+| `kkt0_hydro_reference` | (0) | (0) | (0) | (0) |
+| `kkt0_mass_high` | (9.10485566560014774\times10^{-14}) | (0) | (0) | (0) |
+| `kkt0_mass_low` | (9.10485566560014774\times10^{-14}) | (0) | (0) | (0) |
 
-## Acceptance meaning
+The workflow reported:
 
-A passing `BASE-KKT-0` run means only that the frozen constrained stationary projection machinery is implemented and executable on the pinned Firedrake/Gusto stack.
+`BASE-KKT-0: PASSED`
 
-It does not authorize:
+### Semidiscrete Stage-2
 
-- `M1`;
-- ephemeris forcing;
-- observational comparison;
-- SUN comparison;
-- production timestepper work;
-- merge;
-- deployment.
+Normal workflow:
 
-## Stop condition
+- workflow: `firedrake-semidiscrete-gate`;
+- run: `35660877982`;
+- conclusion: success.
 
-Stop after `BASE-KKT-0` evidence is produced and `BASE-PHYS` is explicitly reported as blocked unless and until the frozen physical base-state inputs are added independently.
+Observed:
+
+[
+|d\widetilde{\mathscr H}_{0,h}/dt|
+=
+2.86293655449298967\times10^{-10},
+]
+
+[
+S_2=1.15088063303053919\times10^7,
+]
+
+[
+R_2=2.48760511935473687\times10^{-17}.
+]
+
+The workflow reported:
+
+`SEMIDISCRETE GATE: PASSED`
+
+## Meaning of BASE-KKT-0 pass
+
+This pass establishes the deterministic manufactured stationary BASE
+implementation gate on the pinned stack under A1. It does not certify the
+physical solar base-state ensemble.
+
+The physical gate remains blocked because the repository still lacks both
+authoritative frozen inputs:
+
+1. an externally supplied/frozen observational (Omega_0(\theta)) record;
+2. a finite preregistered toroidal magnetic-prior family
+   (mathfrak B_0).
+
+Neither may be invented by the numerical implementation or selected using
+BURGAMOTS response outcomes.
+
+## Parallel engineering state
+
+Parallel engineering is now authorized on isolated branches. This does not
+advance BASE-PHYS or expose the implementation to real BURGAMOTS forcing.
+
+- exact-discrete-gradient / NUM-POS engineering: isolated;
+- synthetic time-dependent potential / work-law engineering: isolated;
+- non-solar BASE cancellation-floor calibration: isolated.
+
+No real M1 ephemeris forcing or solar observations have been consumed by those
+engineering branches.
+
+## Current certification spine
+
+[
+\boxed{
+\text{A1 adopted}
+\rightarrow
+\text{BASE-KKT-0 passed}
+\rightarrow
+\text{freeze BASE numerical rule}
+\rightarrow
+\text{freeze physical base records}
+\rightarrow
+\text{BASE-PHYS}
+}
+]
+
+The timestepper and synthetic-work-law lanes proceed in parallel rather than
+serially blocking this spine.
