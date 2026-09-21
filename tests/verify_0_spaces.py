@@ -130,8 +130,6 @@ def test_verify_0():
     owned = A_h.dat.data
     indices = np.arange(owned.size, dtype=float)
     owned[:] = np.sin(0.6180339887498949 * (indices + 1.0))
-    A_h.dat.global_to_local_begin()
-    A_h.dat.global_to_local_end()
 
     # Compatible spherical perpendicular differential.
     #
