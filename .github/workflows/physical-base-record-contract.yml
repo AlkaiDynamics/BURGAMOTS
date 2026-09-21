@@ -1,0 +1,19 @@
+name: physical-base-record-contract
+
+on:
+  push:
+    branches:
+      - eng/physical-base-records
+    paths:
+      - "physical_inputs/**"
+      - "scripts/validate_physical_base_records.py"
+      - ".github/workflows/physical-base-record-contract.yml"
+  workflow_dispatch:
+
+jobs:
+  record-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Notarize frozen external records and admission blockers
+        run: python3 scripts/validate_physical_base_records.py
