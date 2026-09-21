@@ -17,6 +17,8 @@ M1 forcing, or any scientific fit.
 
 from importlib.metadata import PackageNotFoundError, version
 
+import numpy as np
+
 from firedrake import (
     Constant,
     Function,
@@ -28,9 +30,6 @@ from firedrake import (
     dx,
     grad,
     inner,
-    pi,
-    sin,
-    cos,
     sqrt,
 )
 from gusto.core.domain import Domain
@@ -119,9 +118,19 @@ def test_verify_0():
     print("VERIFY-0 quadrature: canonical degree 12")
 
     # Nontrivial A_h probe in the enriched H1 space.
-    x = SpatialCoordinate(mesh)
-    A_expr = sin(pi * x[0] / radius) * cos(pi * x[1] / radius) * (x[2] / radius)
-    A_h = Function(V0, name="A_h_probe").interpolate(A_expr)
+    #
+    # Firedrake does not define an interpolation dual basis for this enriched
+    # CG2+B3 element, so an analytic-expression interpolate() is not available.
+    # That is unrelated to the exact-sequence property we are testing.
+    #
+    # Build a deterministic FE function directly in V0. Any A_h in V0 is a
+    # valid probe for D*C == 0; no analytic projection is required.
+    A_h = Function(V0, name="A_h_probe")
+    owned = A_h.dat.data
+    indices = np.arange(owned.size, dtype=float)
+    owned[:] = np.sin(0.6180339887498949 * (indices + 1.0))
+    A_h.dat.global_to_local_begin()
+    A_h.dat.global_to_local_end()
 
     # Compatible spherical perpendicular differential.
     #
