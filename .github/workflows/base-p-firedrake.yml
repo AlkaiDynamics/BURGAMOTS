@@ -9,6 +9,8 @@ on:
       - "BASE_P_REPORT.md"
       - "BASE_P_IMPLEMENTATION_GATE.md"
       - "BURGAMOTS_NUMERICS_v1.md"
+      - "BURGAMOTS_NUMERICS_AMENDMENT_A1.md"
+      - "numerics/coefficient_centering.py"
       - ".github/workflows/base-p-firedrake.yml"
   pull_request:
     paths:
@@ -37,5 +39,5 @@ jobs:
               python3 --version
               python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
-              python3 /work/tests/verify_base_p.py
+              PYTHONPATH=/work python3 /work/tests/verify_base_p.py
             '
