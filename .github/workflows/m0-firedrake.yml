@@ -1,22 +1,22 @@
-name: firedrake-m0-crucible
+name: firedrake-verify-0
 
 on:
   workflow_dispatch:
   push:
     branches: [refactor/evidence-integrity]
     paths:
-      - "numerics/firedrake/**"
-      - "BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1.md"
+      - "tests/verify_0_spaces.py"
+      - "BURGAMOTS_NUMERICS_v1.md"
       - ".github/workflows/m0-firedrake.yml"
 
 jobs:
-  semidiscrete-m0:
+  verify-0:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run semidiscrete M0 crucible in pinned Firedrake container
+      - name: Run VERIFY-0 in pinned Firedrake + Gusto environment
         shell: bash
         run: |
           docker run --rm \
@@ -25,18 +25,8 @@ jobs:
             firedrakeproject/firedrake:2026.4.1@sha256:798066ee679c94cb379021a0a65099b218702f819d3b0c41f703de16f039e98c \
             bash -lc '
               set -euo pipefail
-              for py in \
-                /home/firedrake/firedrake/bin/python \
-                /opt/firedrake/bin/python \
-                /opt/firedrake/venv/bin/python
-              do
-                if [ -x "$py" ]; then
-                  echo "Using Firedrake interpreter: $py"
-                  exec "$py" /work/numerics/firedrake/m0_semidiscrete.py
-                fi
-              done
-              echo "ERROR: pinned Firedrake image contains no expected interpreter path." >&2
-              echo "Interpreter candidates discovered:" >&2
-              find /home/firedrake /opt/firedrake -maxdepth 4 -type f \( -name python -o -name python3 \) -perm -111 -print 2>/dev/null >&2 || true
-              exit 127
+              python3 --version
+              python3 -m pip install --no-deps \
+                "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
+              python3 /work/tests/verify_0_spaces.py
             '
