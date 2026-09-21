@@ -60,7 +60,6 @@ Limit: no real empirical boundary is constructed in this refactor because UD-001
 Evidence:
 - `App.tsx` does not import `SolarSystemViz`, `Timeline`, or historical model-status components.
 - `scripts/audit-fixtures.mjs` fails if the historical visualization/validation components re-enter the active scientific claim path.
-- The exact frozen solar visualization remains preserved under `protected/` for product reuse but is not a scientific executor.
 
 ### 6. Can the synthetic cycle index be mistaken for physical torque?
 
@@ -68,9 +67,8 @@ Evidence:
 
 Evidence:
 - The historical cycle driver exists only in the protected/dormant visualization source.
-- `tests/solar-visualization-preservation.test.mjs` verifies that the evidence pipeline contains no dependency on `SolarSystemViz`, `calculateTorqueIndex`, or the historical `Torque Index` label.
+- The successor no longer contains the dormant legacy solar visualization source or its synthetic claim-bearing driver; the immutable audit remains the historical record.
 - The active application does not mount the historical visualization.
-- `SOLAR_VISUALIZATION_BACKUP_REPORT.md` records the archive boundary and exact frozen-source hashes.
 
 ### 7. Can a negative result be displayed honestly?
 
@@ -109,7 +107,7 @@ Evidence:
 Evidence:
 - Active `App.tsx` visibly labels the scientific state `BLOCKED` and historical leakage `UNRESOLVED`.
 - It explicitly separates “What is not established” from software controls established by the successor.
-- Historical validation charts, paper, diagrams, and solar visualization are outside the active import graph.
+- Historical validation charts, paper, diagrams, and legacy solar visualization have been purged from the successor branch; the active UI remains evidence-derived.
 - `scripts/audit:claims` equivalent (`npm run audit:claims`) passed on the executed Vercel build.
 - `tests/ui-integrity.test.mjs` verifies the active application contains none of the audited historical validation phrases.
 
@@ -175,3 +173,7 @@ It does **not** claim that temporal ordering, near-duplicate detection, or targe
 ## Review conclusion
 
 All 15 required adversarial checks pass for the implemented evidence-integrity scope. The passing review establishes software/evidence-contract controls only. It does not establish scientific validity, historical leakage cleanliness, or support for either BURGAMOTS scientific hypothesis.
+
+## Post-review scientific boundary
+
+The forcing definition is frozen. No further forcing-model modification is authorized in this integrity phase. The next scientific design artifact, when explicitly begun, is `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1`; solver/PINN selection and SUN comparison occur only after that response contract is frozen.
