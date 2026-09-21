@@ -1,9 +1,16 @@
-"""Focused BASE-KKT-0 diagnostic probe for the failed hydro reference member.
+"""Focused BASE-KKT-0 gstar-depth discrete-nullspace diagnostic.
 
 This probe does not alter the frozen acceptance criterion in verify_base_p.py.
-It localizes the observed kkt0_hydro_reference momentum-rate residual by
-separating raw weak residual assembly from Riesz recovery and by running one
-single direct mass-matrix solve.
+It isolates the failed kkt0_hydro_reference depth/Bernoulli contribution by
+measuring:
+- the D2 representative against the exact hydro constant;
+- the same weak depth residual with D2 bypassed by an explicit constant;
+- the primitive closed-surface divergence functional on every V1 basis DOF;
+- independently assembled Stage-2-source and BASE-P-source SD1 residual paths
+  on the exact same hydro state.
+
+No threshold, physics, weak-form, quadrature, mean-subtraction, or production
+operator changes are made here.
 """
 
 from math import sqrt
@@ -45,6 +52,15 @@ def l2_norm_vector(expr, dxq):
 def dual_vec_norm(cofunction, norm_type=PETSc.NormType.NORM_2):
     with cofunction.dat.vec_ro as vec:
         return vec.norm(norm_type)
+
+
+def dual_difference_norm(left, right, norm_type=PETSc.NormType.NORM_2):
+    with left.dat.vec_ro as left_vec, right.dat.vec_ro as right_vec:
+        diff = left_vec.copy()
+        diff.axpy(-1.0, right_vec)
+        value = diff.norm(norm_type)
+        diff.destroy()
+        return value
 
 
 def strict_solver_params(rtol=1.0e-14, atol=1.0e-15):
@@ -130,6 +146,7 @@ def test_base_kkt_0_hydro_diagnostic_probe():
     gstar_value = 9.81
     omega_frame_value = 7.292e-5
     kappa_value = 1.0
+    K_exact_value = gstar_value * H0_value
 
     mesh = IcosahedralSphereMesh(radius=r_t, refinement_level=2, degree=3)
     mesh.init_cell_orientations(SpatialCoordinate(mesh))
@@ -150,10 +167,10 @@ def test_base_kkt_0_hydro_diagnostic_probe():
     def rot(v):
         return cross(n, v)
 
-    print("BASE-KKT-0 HYDRO DIAG operator binding status = FORMULA_MATCH_ONLY_NOT_SHARED_CALL")
-    print("BASE-KKT-0 HYDRO DIAG certified SD1 form    = -q_h*<w,RU_h> + div(w)*K_h + (M_h/H_h)*<grad(A_h),w>")
-    print("BASE-KKT-0 HYDRO DIAG BASE-P SD1 form       = -q_h*<w,RU_h> + div(w)*K_h + (M_h/H_h)*<grad(A_h),w>")
-    print("BASE-KKT-0 HYDRO DIAG binding verdict      = separate reimplementation; not a shared helper call")
+    print("BASE-KKT-0 GSTAR-DEPTH DIAG operator binding status = FORMULA_MATCH_ONLY_NOT_SHARED_CALL")
+    print("BASE-KKT-0 GSTAR-DEPTH DIAG certified SD1 form    = -q_h*<w,RU_h> + div(w)*K_h + (M_h/H_h)*<grad(A_h),w>")
+    print("BASE-KKT-0 GSTAR-DEPTH DIAG BASE-P SD1 form       = -q_h*<w,RU_h> + div(w)*K_h + (M_h/H_h)*<grad(A_h),w>")
+    print("BASE-KKT-0 GSTAR-DEPTH DIAG mutation scope        = measurement only; no refactor or gate change")
 
     params_14 = strict_solver_params(1.0e-14, 1.0e-15)
 
@@ -221,19 +238,122 @@ def test_base_kkt_0_hydro_diagnostic_probe():
     s_mom = adv_norm + cor_norm + pressure_norm + mag_norm
     r_mom = raw_norm / s_mom if s_mom > 0.0 else 0.0
 
-    print(f"BASE-KKT-0 HYDRO DIAG raw r_u dual L2           = {raw_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG raw r_u dual Linf         = {raw_norm_inf:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG adv/metric raw norm       = {adv_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG coriolis raw norm         = {cor_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG gstar-depth raw norm      = {pressure_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG magnetic raw norm         = {mag_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG S_mom                    = {s_mom:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG R_mom                    = {r_mom:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG raw r_u dual L2           = {raw_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG raw r_u dual Linf         = {raw_norm_inf:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG adv/metric raw norm       = {adv_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG coriolis raw norm         = {cor_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG gstar-depth raw norm      = {pressure_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG magnetic raw norm         = {mag_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG S_mom                    = {s_mom:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG R_mom                    = {r_mom:.17e}")
+
+    # 1. D2 representative against the exact hydro constant K_exact = gstar * H0.
+    K_error_l2 = l2_norm_scalar(K_h - Constant(K_exact_value), dxq)
+    K_dof_max = max(abs(float(value) - K_exact_value) for value in K_h.dat.data_ro.reshape(-1))
+    H_error_l2 = l2_norm_scalar(H_h - Constant(H0_value), dxq)
+    H_dof_max = max(abs(float(value) - H0_value) for value in H_h.dat.data_ro.reshape(-1))
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG K_exact                   = {K_exact_value:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG ||K_h-K_exact|| L2        = {K_error_l2:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG K_h max DOF deviation     = {K_dof_max:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG ||H_h-H0|| L2             = {H_error_l2:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG H_h max DOF deviation     = {H_dof_max:.17e}")
+
+    # 2. Bypass D2 completely: explicit constant weak depth functional.
+    raw_const = assemble(div(w) * Constant(K_exact_value) * dxq)
+    const_norm = dual_vec_norm(raw_const)
+    const_norm_inf = dual_vec_norm(raw_const, PETSc.NormType.NORM_INFINITY)
+    const_vs_d2_l2 = dual_difference_norm(raw_const, raw_pressure)
+    const_vs_d2_inf = dual_difference_norm(raw_const, raw_pressure, PETSc.NormType.NORM_INFINITY)
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG explicit-constant raw L2   = {const_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG explicit-constant raw Linf = {const_norm_inf:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG const-vs-D2 vector L2 diff = {const_vs_d2_l2:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG const-vs-D2 max coeff diff = {const_vs_d2_inf:.17e}")
+
+    # 3. Primitive closed-surface identity b_i = integral div(phi_i) dx_q.
+    raw_divergence_basis = assemble(div(w) * Constant(1.0) * dxq)
+    b_l2 = dual_vec_norm(raw_divergence_basis)
+    b_inf = dual_vec_norm(raw_divergence_basis, PETSc.NormType.NORM_INFINITY)
+    scaled_b_l2 = abs(K_exact_value) * b_l2
+    scaled_b_inf = abs(K_exact_value) * b_inf
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG ||b||_2                    = {b_l2:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG ||b||_inf                  = {b_inf:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG |K_exact|*||b||_2          = {scaled_b_l2:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG |K_exact|*||b||_inf        = {scaled_b_inf:.17e}")
+
+    # 4. Operator-binding comparison as measurement only.
+    # Stage-2 source path is reproduced with its own D1-D3/PV solves using the
+    # exact same hydro state, constants, geometry, quadrature, and tolerances.
+    U_stage2 = Function(V1, name="U_stage2")
+    U_stage2_trial = TrialFunction(V1)
+    solve(
+        inner(w, U_stage2_trial) * dxq == H_h * inner(u_h, w) * dxq,
+        U_stage2,
+        solver_parameters=params_14,
+    )
+
+    K_stage2 = Function(V2, name="K_stage2")
+    K_stage2_trial = TrialFunction(V2)
+    K_stage2_rhs = (
+        0.5 * inner(u_h, u_h)
+        - inner(m_h, m_h) / (2.0 * Constant(1.0) * H_h**2)
+        + gstar_value * H_h
+    )
+    solve(
+        phi * K_stage2_trial * dxq == phi * K_stage2_rhs * dxq,
+        K_stage2,
+        solver_parameters=params_14,
+    )
+
+    M_stage2 = Function(V0, name="M_stage2")
+    M_stage2_trial = TrialFunction(V0)
+    solve(
+        gamma * M_stage2_trial * dxq
+        == inner(grad(gamma), grad(A_h)) / (Constant(1.0) * H_h) * dxq,
+        M_stage2,
+        solver_parameters=params_14,
+    )
+
+    q_stage2 = Function(V0, name="q_stage2")
+    q_stage2_trial = TrialFunction(V0)
+    solve(
+        H_h * q_stage2_trial * gamma * dxq
+        == (-inner(u_h, rot(grad(gamma))) + f_C * gamma) * dxq,
+        q_stage2,
+    )
+
+    q_basep = Function(V0, name="q_basep")
+    q_basep_trial = TrialFunction(V0)
+    solve(
+        H_h * q_basep_trial * gamma * dxq
+        == (-inner(u_h, rot(grad(gamma))) + f_C * gamma) * dxq,
+        q_basep,
+    )
+
+    stage2_sd1_rhs = (
+        -q_stage2 * inner(w, rot(U_stage2))
+        + div(w) * K_stage2
+        + (M_stage2 / H_h) * inner(grad(A_h), w)
+    )
+    basep_sd1_rhs = (
+        -q_basep * inner(w, rot(U_h))
+        + div(w) * K_h
+        + (M_h / H_h) * inner(grad(A_h), w)
+    )
+    raw_stage2 = assemble(stage2_sd1_rhs * dxq)
+    raw_basep = assemble(basep_sd1_rhs * dxq)
+    stage2_norm = dual_vec_norm(raw_stage2)
+    basep_norm = dual_vec_norm(raw_basep)
+    binding_diff_l2 = dual_difference_norm(raw_stage2, raw_basep)
+    binding_diff_inf = dual_difference_norm(raw_stage2, raw_basep, PETSc.NormType.NORM_INFINITY)
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG Stage2-source residual L2 = {stage2_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG BASE-P-source residual L2 = {basep_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG Stage2-vs-BASE-P L2 diff  = {binding_diff_l2:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG Stage2-vs-BASE-P max diff = {binding_diff_inf:.17e}")
 
     for tol in (1.0e-12, 1.0e-14, 1.0e-15):
         du_probe = solve_v1_rate(V1, dxq, sd1_rhs, f"du_dt_krylov_{tol:.0e}", strict_solver_params(tol, tol * 0.1))
         du_norm = l2_norm_vector(du_probe, dxq)
-        print(f"BASE-KKT-0 HYDRO DIAG krylov rtol {tol:.0e} du_dt L2 = {du_norm:.17e}")
+        print(f"BASE-KKT-0 GSTAR-DEPTH DIAG krylov rtol {tol:.0e} du_dt L2 = {du_norm:.17e}")
 
     try:
         du_direct = solve_v1_rate(
@@ -244,9 +364,9 @@ def test_base_kkt_0_hydro_diagnostic_probe():
             {"ksp_type": "preonly", "pc_type": "lu"},
         )
         direct_norm = l2_norm_vector(du_direct, dxq)
-        print(f"BASE-KKT-0 HYDRO DIAG direct LU du_dt L2       = {direct_norm:.17e}")
+        print(f"BASE-KKT-0 GSTAR-DEPTH DIAG direct LU du_dt L2       = {direct_norm:.17e}")
     except Exception as exc:
-        print(f"BASE-KKT-0 HYDRO DIAG direct LU unavailable    = {type(exc).__name__}: {exc}")
+        print(f"BASE-KKT-0 GSTAR-DEPTH DIAG direct LU unavailable    = {type(exc).__name__}: {exc}")
 
     dH_h = Function(V2, name="dH_dt")
     dH_trial = TrialFunction(V2)
@@ -273,16 +393,16 @@ def test_base_kkt_0_hydro_diagnostic_probe():
         )
     )
 
-    print(f"BASE-KKT-0 HYDRO DIAG dH_dt L2                 = {dH_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG dA_dt L2                 = {dA_norm:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG mass abs error           = {mass_error:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG mass rel error           = {mass_relative:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG gauge integral           = {abs(gauge):.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG H minimum                = {H_min:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG DIVB L2                  = {div_residual:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG BASE-D metric            = {base_d:.17e}")
-    print(f"BASE-KKT-0 HYDRO DIAG frozen gate remains       = R_h^M0 < {STATIONARY_RATE_TOL:.1e}")
-    print("BASE-KKT-0 HYDRO DIAGNOSTIC PROBE: COMPLETE")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG dH_dt L2                 = {dH_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG dA_dt L2                 = {dA_norm:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG mass abs error           = {mass_error:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG mass rel error           = {mass_relative:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG gauge integral           = {abs(gauge):.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG H minimum                = {H_min:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG DIVB L2                  = {div_residual:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG BASE-D metric            = {base_d:.17e}")
+    print(f"BASE-KKT-0 GSTAR-DEPTH DIAG frozen gate remains       = R_h^M0 < {STATIONARY_RATE_TOL:.1e}")
+    print("BASE-KKT-0 GSTAR-DEPTH DISCRETE NULLSPACE DIAGNOSTIC: COMPLETE")
     print("BASE-PHYS: BLOCKED_MISSING_FROZEN_OMEGA0_AND_BPHI0_FAMILY")
 
 
