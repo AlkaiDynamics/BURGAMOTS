@@ -11,7 +11,7 @@
   "candidate_amplitudes": [
     {
       "kind": "fixed",
-      "value_kG": 0.0,
+      "value_kG": 0,
       "role": "hydrodynamic reference"
     },
     {
@@ -21,31 +21,35 @@
     },
     {
       "kind": "fixed",
-      "value_kG": 50.0,
+      "value_kG": 50,
       "role": "preregistered regime anchor"
     },
     {
       "kind": "fixed",
-      "value_kG": 100.0,
+      "value_kG": 100,
       "role": "preregistered regime anchor"
     },
     {
       "kind": "fixed",
-      "value_kG": 300.0,
+      "value_kG": 300,
       "role": "preregistered upper envelope"
     }
   ],
   "A_eq_definition": "sqrt(mu0*rho0 * integral(H0*U_sh^2 dA) / integral(H0*sin(2theta)^2 dA))",
   "A_eq_rule": {
-    "omit_if_greater_than_kG": 300.0,
+    "omit_if_greater_than_kG": 300,
     "clip": false,
     "collapse_duplicates": true
   },
   "admission_rule": {
     "formula": "ADMIT(A)=MAG1(A) AND SW_GEOM(A) AND EQRES(A)",
-    "MAG1": "pole regularity and finite magnetic-energy representation",
-    "SW_GEOM": "min_theta(H0+eta0_A)>0 and thin-shell geometry remains admissible",
-    "EQRES": "gstar*deta0_A/dtheta - ((U0^2-vA^2)*cot(theta)+2*Omega_frame*r_t*U0*cos(theta)) = 0 within the frozen numerical equilibrium criterion",
+    "named_subpredicate_expansion_status": "NOT_FROZEN_DO_NOT_INFER",
+    "frozen_constituent_requirements": [
+      "B_phi0(theta)=O(sin(theta)) as theta approaches 0 or pi",
+      "H0+eta0_A(theta)>0",
+      "||eta0_A||_infinity/r_t << 1",
+      "B1 equilibrium residual satisfies a preregistered arithmetic tolerance"
+    ],
     "outcome_use_prohibited": true
   },
   "provenance": [
@@ -65,10 +69,12 @@
       "claim": "Included before BURGAMOTS outcomes to span the independently motivated strong-field regime."
     }
   ],
-  "content_sha256": "0dd67a7cc5aff46934b27c735f80d40f08c2553072fea6a97fb9876243821823",
+  "content_sha256": "b3f4c7f83e5418e57846859a6e0da756620ef4d5961dba1a0b7e4ca6760f259f",
   "outcome_independence": {
     "burgamots_response_used": false,
     "posthoc_member_selection_allowed": false,
     "selection_basis": "Candidate amplitudes and ADMIT rule were preregistered before any physical BURGAMOTS response run."
-  }
+  },
+  "U_sh_definition": "U_sh(theta)=r_t*sin(theta)*(Omega_0(theta)-barOmega)",
+  "barOmega_definition": "barOmega = integral(H0*r_t^2*sin(theta)^2*Omega_0(theta) dA) / integral(H0*r_t^2*sin(theta)^2 dA)"
 }
