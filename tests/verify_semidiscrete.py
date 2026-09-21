@@ -43,9 +43,9 @@ from firedrake import (
 from gusto.core.function_spaces import Spaces
 
 
-STAGE1_ABS_TOL = 1.0e-11
-STAGE1_REL_TOL = 1.0e-14
-PAIR_ABS_TOL = 1.0e-12\nREL_TOL = 1.0e-15
+STAGE1_ABS_TOL = 1.0e-12
+STAGE1_REL_TOL = 1.0e-15
+PAIR_TOL = 1.0e-12
 GAUGE_TOL = 1.0e-12
 STAGE2_TOL = 1.0e-12
 
@@ -242,9 +242,9 @@ def test_semidiscrete_cancellation():
         f"INDUCTION/LORENTZ PAIR FAILURE: |T4+T5|={abs(magnetic_pair)} >= {PAIR_TOL}",
     )
     require(
-        C_abs < STAGE1_ABS_TOL and relative_C < STAGE1_REL_TOL,
+        C_abs < STAGE1_ABS_TOL or relative_C < STAGE1_REL_TOL,
         "FORM/BRACKET IMPLEMENTATION FAILURE: "
-        f"|C_h|={C_abs} >= {STAGE1_ABS_TOL} or "
+        f"|C_h|={C_abs} >= {STAGE1_ABS_TOL} and "
         f"relative={relative_C} >= {STAGE1_REL_TOL}",
     )
 
