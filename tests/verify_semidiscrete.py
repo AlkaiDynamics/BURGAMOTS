@@ -301,6 +301,10 @@ def test_semidiscrete_cancellation():
             -gamma_g * inner(U_h / H_h, grad(A_h))
         ) * dxq,
         adot_lambda,
+        solver_parameters={
+            "ksp_rtol": 1.0e-14,
+            "ksp_atol": 1.0e-15,
+        },
     )
 
     dA_h, lambda_A = adot_lambda.subfunctions
