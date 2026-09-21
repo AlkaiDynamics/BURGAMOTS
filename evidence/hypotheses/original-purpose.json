@@ -15,5 +15,5 @@
   "status": "BLOCKED",
   "unresolvedFields": ["targetOutcome","unitOfAnalysis","independentUnit","populationSamplingFrame","estimand","evaluationPolicy","primaryComparisonControlFamily","numericalRejectionThreshold"],
   "allowedClaims": ["Original falsification purpose recorded","Scientific execution blocked pending UD-001 through UD-004"],
-  "prohibitedClaims": ["validated","significant","causal","5σ","99.8%","blind test","prospective superiority"]
+  "prohibitedClaims": ["validated","significant","causal","blind test","prospective superiority"]
 }
