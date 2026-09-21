@@ -143,7 +143,7 @@ Observed execution results:
 - Intentionally invalid fixture rejected with exit `1`.
 - Injected verifier failure propagated with exit `17`.
 - TypeScript active-runtime typecheck passed.
-- `61/61` tests passed.
+- The full automated test suite passed.
 - Fixture isolation audit passed.
 - Provenance audit passed.
 - Successor leakage-boundary audit passed while historical leakage remained `UNRESOLVED`.
@@ -193,3 +193,7 @@ The frozen audit remains authoritative for historical findings. Refactor code mu
 The successor establishes evidence-handling controls and an honest blocked state. It does not establish the underlying BURGAMOTS scientific hypothesis, physical causality, prospective predictive superiority, or operational utility.
 
 No scientific experiment, empirical dataset acquisition, confirmatory statistical method, DeepXDE scientific implementation, physical torque model, merge to `main`, or production/main deployment is part of this completed integrity refactor.
+
+## Scientific checkpoint
+
+The forcing layer is locked as `BURGAMOTS_FORCING_LEDGER_v1`. The next scientific design artifact is `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1`. No solver/PINN architecture and no SUN comparison is authorized before that response contract is frozen.
