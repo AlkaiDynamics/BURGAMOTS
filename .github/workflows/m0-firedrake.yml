@@ -26,7 +26,7 @@ jobs:
             bash -lc '
               set -euo pipefail
               python3 --version
-              python3 -m pip install --no-deps \
+              python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
               python3 /work/tests/verify_0_spaces.py
             '
