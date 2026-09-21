@@ -12,8 +12,8 @@ M1: NOT AUTHORIZED
 
 - Repository: `AlkaiDynamics/BURGAMOTS`
 - Branch: `refactor/evidence-integrity`
-- Tested commit: `6136c600e73c1fd43ecd61802ae37d4e76f45f4a`
-- GitHub Actions run: `35639766851`
+- Tested commit: `e6d6b2beeeac4c2e66b90534cf15d5cb9eb877b3`
+- GitHub Actions run: `35640175433`
 - Firedrake: `2026.4.1`
 - Firedrake image digest: `sha256:798066ee679c94cb379021a0a65099b218702f819d3b0c41f703de16f039e98c`
 - Gusto commit: `669f6372cd334ed47c9c7b38f26e591732273f75`
