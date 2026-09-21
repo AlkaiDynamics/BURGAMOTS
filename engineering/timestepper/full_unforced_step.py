@@ -284,27 +284,13 @@ def one_step(dt_value=2.0e-3):
             "snes_atol": 1.0e-12,
             "snes_stol": 1.0e-12,
             "snes_max_it": 40,
-            "mat_type": "matfree",
-            "ksp_type": "fgmres",
+            "mat_type": "nest",
+            "sub_mat_type": "aij",
+            "ksp_type": "gmres",
             "ksp_rtol": 1.0e-11,
-            "pc_type": "fieldsplit",
-            "pc_fieldsplit_type": "schur",
-            "pc_fieldsplit_schur_fact_type": "full",
-            "pc_fieldsplit_0_fields": "0,1,2,3,4,5,6",
-            "pc_fieldsplit_1_fields": "7",
-            "fieldsplit_0": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {
-                    "ksp_type": "preonly",
-                    "pc_type": "lu",
-                },
-            },
-            "fieldsplit_1": {
-                "ksp_type": "preonly",
-                "pc_type": "none",
-            },
+            "ksp_atol": 1.0e-12,
+            "ksp_max_it": 1000,
+            "pc_type": "none",
         },
     )
 
