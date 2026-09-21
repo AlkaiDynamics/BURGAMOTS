@@ -82,7 +82,34 @@ def zero_mean_project_v0(mesh, V0, dxq, source_expr, name):
     solve(
         (gamma * a + lam * gamma + mu * a) * dxq == gamma * source_expr * dxq,
         z,
-        solver_parameters={"ksp_type": "preonly", "pc_type": "lu"},
+        solver_parameters={
+            "mat_type": "matfree",
+            "ksp_type": "fgmres",
+            "ksp_rtol": 1.0e-14,
+            "ksp_atol": 1.0e-15,
+            "pc_type": "fieldsplit",
+            "pc_fieldsplit_type": "schur",
+            "pc_fieldsplit_schur_fact_type": "full",
+            "pc_fieldsplit_0_fields": "0",
+            "pc_fieldsplit_1_fields": "1",
+            "fieldsplit_0": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {
+                    "ksp_type": "gmres",
+                    "ksp_rtol": 1.0e-14,
+                    "ksp_atol": 1.0e-15,
+                    "pc_type": "jacobi",
+                },
+            },
+            "fieldsplit_1": {
+                "ksp_type": "gmres",
+                "ksp_rtol": 1.0e-14,
+                "ksp_atol": 1.0e-15,
+                "pc_type": "none",
+            },
+        },
     )
     out = Function(V0, name=name)
     out.assign(z.subfunctions[0])
