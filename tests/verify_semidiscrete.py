@@ -43,7 +43,11 @@ from firedrake import (
 from gusto.core.function_spaces import Spaces
 
 
-TOL = 1.0e-12
+STAGE1_ABS_TOL = 1.0e-11
+STAGE1_REL_TOL = 1.0e-14
+PAIR_TOL = 1.0e-12
+GAUGE_TOL = 1.0e-12
+STAGE2_TOL = 1.0e-12
 
 
 def require(condition, message):
@@ -214,21 +218,34 @@ def test_semidiscrete_cancellation():
         + abs(mag_minus)
     )
     relative_C = abs(C_h_val) / max(component_scale, 1.0)
+    mass_pair = mass_plus + mass_minus
+    magnetic_pair = mag_plus + mag_minus
 
     print(f"STAGE 1 vorticity term       = {vort_term:.17e}")
     print(f"STAGE 1 mass plus            = {mass_plus:.17e}")
     print(f"STAGE 1 mass minus           = {mass_minus:.17e}")
     print(f"STAGE 1 magnetic plus        = {mag_plus:.17e}")
     print(f"STAGE 1 magnetic minus       = {mag_minus:.17e}")
+    print(f"STAGE 1 mass pair residual   = {mass_pair:.17e}")
+    print(f"STAGE 1 magnetic pair residual= {magnetic_pair:.17e}")
     print(f"STAGE 1 component scale      = {component_scale:.17e}")
     print(f"STAGE 1 direct C_h           = {C_h_val:.17e}")
     print(f"STAGE 1 relative cancellation= {relative_C:.17e}")
 
     C_abs = abs(C_h_val)
     require(
-        C_abs < TOL,
-        f"FORM/BRACKET IMPLEMENTATION FAILURE: |C_h|={C_abs} >= {TOL}; "
-        f"relative={relative_C}",
+        abs(mass_pair) < PAIR_TOL,
+        f"CONTINUITY/BERNOULLI PAIR FAILURE: |T2+T3|={abs(mass_pair)} >= {PAIR_TOL}",
+    )
+    require(
+        abs(magnetic_pair) < PAIR_TOL,
+        f"INDUCTION/LORENTZ PAIR FAILURE: |T4+T5|={abs(magnetic_pair)} >= {PAIR_TOL}",
+    )
+    require(
+        C_abs < STAGE1_ABS_TOL and relative_C < STAGE1_REL_TOL,
+        "FORM/BRACKET IMPLEMENTATION FAILURE: "
+        f"|C_h|={C_abs} >= {STAGE1_ABS_TOL} or "
+        f"relative={relative_C} >= {STAGE1_REL_TOL}",
     )
 
     # -------------------------
@@ -292,8 +309,8 @@ def test_semidiscrete_cancellation():
     gauge_val = float(assemble(dA_h * dxq))
     print(f"SD3 zero-mean gauge integral = {abs(gauge_val):.17e}")
     require(
-        abs(gauge_val) < TOL,
-        f"SD3 GAUGE FAILURE: |integral dA|={abs(gauge_val)} >= {TOL}",
+        abs(gauge_val) < GAUGE_TOL,
+        f"SD3 GAUGE FAILURE: |integral dA|={abs(gauge_val)} >= {GAUGE_TOL}",
     )
 
     # -------------------------
@@ -310,8 +327,8 @@ def test_semidiscrete_cancellation():
     dHdt_abs = abs(float(dHdt))
     print(f"STAGE 2 (Semidiscrete dH/dt) = {dHdt_abs:.17e}")
     require(
-        dHdt_abs < TOL,
-        f"RIESZ/RATE SOLVE OR GAUGE FAILURE: |dH/dt|={dHdt_abs} >= {TOL}",
+        dHdt_abs < STAGE2_TOL,
+        f"RIESZ/RATE SOLVE OR GAUGE FAILURE: |dH/dt|={dHdt_abs} >= {STAGE2_TOL}",
     )
 
     print("SEMIDISCRETE GATE: PASSED")
