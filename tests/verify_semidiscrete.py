@@ -79,8 +79,8 @@ def test_semidiscrete_cancellation():
         return cross(n, v)
 
     strict_solver_params = {
-        "ksp_rtol": 1.0e-14,
-        "ksp_atol": 1.0e-15,
+        "ksp_rtol": 1.0e-15,
+        "ksp_atol": 1.0e-16,
     }
 
     # 2. Frozen compatible complex.
