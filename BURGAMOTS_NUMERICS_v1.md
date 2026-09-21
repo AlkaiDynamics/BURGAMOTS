@@ -119,6 +119,15 @@ Define
 
 The compatible differential operator is the de Rham map from \(V_h^0\) into \(V_h^1\). An arbitrary L2 projection of an extrinsic cross-product expression into BDFM is forbidden.
 
+For the pinned Firedrake/Gusto v1 stack, VERIFY-0 establishes the concrete commuting realization:
+
+```python
+m_h = Function(V1)
+m_h.interpolate(cross(CellNormal(mesh), grad(A_h)))
+```
+
+The symbolic `CellNormal(mesh)` is required. Gusto's `domain.perp` helper is not the v1 magnetic-flux map because it first interpolates the cell normal into a DG vector field; VERIFY-0 measured a nonzero divergence for that reconstructed path. The direct symbolic-cell-normal map is therefore the frozen implementation of \(\nabla_h^\perp\) for v1.
+
 The topology must satisfy
 
 \[
@@ -689,7 +698,39 @@ If more than one minimizer survives the frozen arithmetic/nonlinear uniqueness t
 
 No information from M1 may enter BASE-P.
 
-## 15. First executable gate: VERIFY-0 only
+## 15. First executable gate: VERIFY-0 — PASSED
+
+Pinned execution evidence:
+
+- GitHub Actions workflow: `firedrake-verify-0`
+- Successful run id: `35639766851`
+- Repository commit tested: `6136c600e73c1fd43ecd61802ae37d4e76f45f4a`
+- Firedrake: `2026.4.1`
+- Firedrake image digest: `sha256:798066ee679c94cb379021a0a65099b218702f819d3b0c41f703de16f039e98c`
+- Gusto source commit: `669f6372cd334ed47c9c7b38f26e591732273f75`
+- V0: `<<CG2 on a triangle> + <B3 on a triangle>>`
+- V1: `<BDFM2 on a triangle>`
+- V2: `<DG1 on a triangle>`
+- geometry degree: `3`
+- quadrature: canonical degree `12`
+- DIVB max residual: `3.25192608313473709e-15`
+- DIVB L2 norm: `2.93321495868915036e-13`
+- zero-state velocity residual: `3.17136683541494545e-15`
+- zero-state thickness residual: `0`
+- zero-state magnetic norm: `0`
+
+All required VERIFY-0 tolerances were below the frozen `1e-12` gate.
+
+### Rejected implementation paths
+
+VERIFY-0 also falsified two tempting but incorrect realizations without changing the numerical contract:
+
+1. `domain.perp(grad(A_h))` followed by interpolation produced DIVB max residual `3.34691215876413992e-04` and L2 norm `3.35258603525875262e-02`; this path is prohibited.
+2. Direct UFL `curl(A_h)` is an intrinsic 2-vector and cannot be interpolated into the embedded-sphere BDFM space whose physical value shape is 3; this path is not the v1 realization.
+
+The accepted map is the direct interpolation of `cross(CellNormal(mesh), grad(A_h))`.
+
+## 15.1 VERIFY-0 contract
 
 Before BASE-P or the production timestepper is implemented, the installed Firedrake/Gusto stack must demonstrate that it realizes the frozen complex.
 
