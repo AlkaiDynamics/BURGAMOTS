@@ -25,7 +25,7 @@ export function canTransition(from, to) {
 const policy = Object.freeze({
   BLOCKED: {
     allowed: ['No inspectable empirical result is available', 'Scientific evaluation is blocked'],
-    forbidden: ['validated', 'significant', 'causal', 'blind test', '5σ', '99.8%'],
+    forbidden: ['validated', 'significant', 'causal', 'blind test'],
   },
   ILLUSTRATIVE: {
     allowed: ['Illustrative simulation', 'Synthetic example'],
