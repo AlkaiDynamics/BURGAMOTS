@@ -1,0 +1,32 @@
+name: firedrake-semidiscrete-gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [refactor/evidence-integrity]
+    paths:
+      - "tests/verify_semidiscrete.py"
+      - "BURGAMOTS_NUMERICS_v1.md"
+      - ".github/workflows/semidiscrete-firedrake.yml"
+
+jobs:
+  semidiscrete-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run semidiscrete gate in pinned Firedrake + Gusto environment
+        shell: bash
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -w /work \
+            firedrakeproject/firedrake:2026.4.1@sha256:798066ee679c94cb379021a0a65099b218702f819d3b0c41f703de16f039e98c \
+            bash -lc '
+              set -euo pipefail
+              python3 --version
+              python3 -m pip install \
+                "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
+              python3 /work/tests/verify_semidiscrete.py
+            '
