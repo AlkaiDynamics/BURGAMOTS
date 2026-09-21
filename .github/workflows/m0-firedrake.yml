@@ -28,6 +28,5 @@ jobs:
               python3 --version
               python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
-              python3 -c 'from importlib.metadata import distribution; from pathlib import Path; d=distribution("gusto"); p=Path(d._path)/"direct_url.json"; print("Pinned Gusto direct_url.json:"); print(p.read_text())'
               python3 /work/tests/verify_0_spaces.py
             '
