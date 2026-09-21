@@ -13,7 +13,7 @@ It implements the frozen v1 pointwise discrete-gradient pieces:
   K_kin     = 1/4 (|u+|^2 + |u-|^2)
   G_m       = 1/(4*kappa) (1/H+ + 1/H-) (m+ + m-)
   K_mag     = -( |m+|^2 + |m-|^2 ) / (4*kappa*H+*H-)
-  K_gravity = g*/2 (H+ + H-)
+  K_gravity = g*/2 (eta+ + eta-)  [A1 coefficient-centered]
 """
 
 from math import sqrt
@@ -33,9 +33,17 @@ from firedrake import (
 )
 from gusto.core.function_spaces import Spaces
 
+from numerics.coefficient_centering import (
+    coefficient_anomaly,
+    exact_background_field,
+    centered_gravity_energy_density,
+    centered_gravity_discrete_gradient,
+)
+
 
 GSTAR = 9.81
 KAPPA = 1.0
+H0_VALUE = 1000.0
 
 
 def build_frozen_space():
@@ -66,11 +74,11 @@ def retry_dt_after_num_pos(dt, H_candidate):
     }
 
 
-def hamiltonian_density(H, u, m):
+def hamiltonian_density(H, u, m, eta):
     return (
         0.5 * H * inner(u, u)
         + inner(m, m) / (2.0 * Constant(KAPPA) * H)
-        + 0.5 * Constant(GSTAR) * H**2
+        + centered_gravity_energy_density(eta, GSTAR)
     )
 
 
@@ -137,6 +145,10 @@ def discrete_gradient_chain_rule():
     Hbar = 0.5 * (H_plus + H_minus)
     ubar = 0.5 * (u_plus + u_minus)
 
+    H0_h = exact_background_field(H_minus.function_space(), H0_VALUE, name="H0_h")
+    eta_minus = coefficient_anomaly(H_minus, H0_h, name="eta_minus")
+    eta_plus = coefficient_anomaly(H_plus, H0_h, name="eta_plus")
+
     dU = u_plus - u_minus
     dH = H_plus - H_minus
     dm = m_plus - m_minus
@@ -151,10 +163,14 @@ def discrete_gradient_chain_rule():
     K_mag = -(
         inner(m_plus, m_plus) + inner(m_minus, m_minus)
     ) / (Constant(4.0 * KAPPA) * H_plus * H_minus)
-    K_gravity = 0.5 * Constant(GSTAR) * (H_plus + H_minus)
+    K_gravity = centered_gravity_discrete_gradient(eta_minus, eta_plus, GSTAR)
 
-    energy_minus = float(assemble(hamiltonian_density(H_minus, u_minus, m_minus) * dxq))
-    energy_plus = float(assemble(hamiltonian_density(H_plus, u_plus, m_plus) * dxq))
+    energy_minus = float(
+        assemble(hamiltonian_density(H_minus, u_minus, m_minus, eta_minus) * dxq)
+    )
+    energy_plus = float(
+        assemble(hamiltonian_density(H_plus, u_plus, m_plus, eta_plus) * dxq)
+    )
     delta_energy = energy_plus - energy_minus
 
     kinetic_work = float(assemble((inner(Ubar, dU) + K_kin * dH) * dxq))
@@ -164,6 +180,7 @@ def discrete_gradient_chain_rule():
     residual = delta_energy - dg_sum
 
     print("DG KERNEL manufactured pair: NUM-POS = PASS")
+    print("DG KERNEL gravity representation             = A1_COEFFICIENT_CENTERED")
     print(f"DG KERNEL H- min                         = {float(np.min(H_minus.dat.data_ro)):.17e}")
     print(f"DG KERNEL H+ min                         = {float(np.min(H_plus.dat.data_ro)):.17e}")
     print(f"DG KERNEL delta Hamiltonian              = {delta_energy:.17e}")
