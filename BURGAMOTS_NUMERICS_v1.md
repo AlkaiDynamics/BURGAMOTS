@@ -8,6 +8,8 @@
 
 This is the authoritative numerical contract for the unforced BURGAMOTS tachocline SWMHD realization. It supersedes the earlier draft in \`BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1.md\`.
 
+**Amendment A1 is adopted and authoritative:** \`BURGAMOTS_NUMERICS_AMENDMENT_A1.md\`. A1 changes only the gravitational Hamiltonian representative to coefficient-space Casimir centering; all frozen physics, spaces, mesh, quadrature, forcing semantics, and pre-existing acceptance thresholds remain unchanged.
+
 Upstream objects remain unchanged:
 
 - \`BURGAMOTS_FORCING_LEDGER_v1\`: LOCKED.
@@ -196,11 +198,20 @@ Let
 \kappa=\mu_0\rho_0.
 \]
 
-The discrete unforced Hamiltonian is
+Amendment A1 uses the Casimir-equivalent coefficient-centered representative. Let
+\(H_{0,h}\in V_h^2=DG_1\) be the exactly represented constant background field and define the derived, non-prognostic anomaly
+\[
+\boxed{
+\eta_h:=H_h-H_{0,h}
+}
+\]
+by coefficient-space subtraction in \(DG_1\).
+
+The adopted discrete unforced Hamiltonian is
 
 \[
 \boxed{
-\mathscr H_{0,h}
+\widetilde{\mathscr H}_{0,h}
 =
 \int_{S^2}
 \left[
@@ -208,13 +219,13 @@ The discrete unforced Hamiltonian is
 +
 \frac{|\mathbf m_h|^2}{2\kappa H_h}
 +
-\frac12g_*H_h^2
+\frac12g_*\eta_h^2
 \right]dx_q.
 }
-\tag{H}
+\tag{H-A1}
 \]
 
-All derivatives, residuals, and conservation diagnostics are derived from this same discrete functional.
+This differs from the former uncentered representative only by the mass Casimir and a constant on the same discrete mass functional. The continuum dynamics are unchanged. All derivatives, residuals, and conservation diagnostics are derived from this same coefficient-centered discrete functional; mixed centered/uncentered energy-derivative representations are prohibited.
 
 ## 7. Riesz derivatives D1–D3
 
@@ -239,12 +250,14 @@ Define \(\mathbf U_h\in V_h^1\), \(K_h\in V_h^2\), and \(M_h\in V_h^0\) by:
 -
 \frac{|\mathbf m_h|^2}{2\kappa H_h^2}
 +
-g_*H_h
+g_*\eta_h
 \right]
 \phi_h\,dx_q.
 }
-\tag{D2}
+\tag{D2-A1}
 \]
+
+Here \(\eta_h\) is the coefficient-space DG1 anomaly defined in (H-A1); the gravitational derivative is \(K_{g,h}=g_*\eta_h\).
 
 Because
 \(|\nabla_h^\perp A_h|^2=|\nabla_hA_h|^2\),
@@ -485,7 +498,22 @@ These satisfy exactly
 }
 \]
 
-The gravity contribution uses the exact quadratic discrete gradient.
+For Amendment A1, form
+\[
+\eta_h^\pm=H_h^\pm-H_{0,h}
+\]
+by coefficient-space subtraction and use the exact quadratic gravitational discrete gradient
+\[
+\boxed{
+\bar K_{\rm grav}
+=
+\frac{g_*}{2}
+\left(
+\eta_h^+ + \eta_h^-
+\right).
+}
+\]
+The centered gravitational energy and its discrete derivative must use the same derived \(\eta_h\) representation.
 
 The production timestep is a symmetric midpoint-skew exact-discrete-gradient method. A plain RK, IMEX, or unmodified implicit-midpoint method is not a v1 production integrator.
 
@@ -578,6 +606,8 @@ Thickness target:
 }
 \tag{P-H}
 \]
+
+For deterministic verification targets already exactly contained in the destination FE space, the projector identity \(P_hv=v\) is realized directly at the coefficient level rather than through a redundant approximate mass solve. This is an implementation of the same canonical projector, not a new projection definition.
 
 For an axisymmetric toroidal base field, first define the continuum magnetic flux potential by
 
