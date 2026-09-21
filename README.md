@@ -198,4 +198,4 @@ No scientific experiment, empirical dataset acquisition, confirmatory statistica
 
 ## Scientific checkpoint
 
-The forcing layer is locked as `BURGAMOTS_FORCING_LEDGER_v1`. `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1.md` freezes `BURGAMOTS_TACH_SWMHD_v1`, and `BURGAMOTS_BASESTATE_PROTOCOL_v1.md` freezes the admissible base-state family plus M0/M1/control semantics. The next scientific unit is `BURGAMOTS_NUMERICAL_REALIZATION_SPEC_v1`, which must freeze the discrete solver/invariant/convergence contract before any implementation donor is selected. SUN comparison remains out of scope.
+The forcing layer is locked as `BURGAMOTS_FORCING_LEDGER_v1`. `BURGAMOTS_SOLAR_RESPONSE_SPEC_v1.md` freezes `BURGAMOTS_TACH_SWMHD_v1`, `BURGAMOTS_BASESTATE_PROTOCOL_v1.md` freezes the admissible base-state family plus M0/M1/control semantics, and `BURGAMOTS_NUMERICS_v1.md` freezes the numerical contract. `VERIFY_0_REPORT.md` records a runner-confirmed VERIFY-0 pass on the pinned Firedrake/Gusto stack. The next gate is implementation of D1–D3, weak PV, and SD1–SD3 followed by semidiscrete energy-cancellation verification. M1 and SUN comparison remain blocked.
