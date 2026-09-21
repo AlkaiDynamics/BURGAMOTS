@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "burgamots-base-physical-constants.schema.json",
+  "title": "BURGAMOTS physical base constants and admission thresholds",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_id",
+    "version",
+    "status",
+    "r_t_m",
+    "H0_m",
+    "rho0_kg_m3",
+    "gstar_m_s2",
+    "mu0_H_m",
+    "omega_frame_rad_s",
+    "sw_geom_max_abs_eta_over_rt",
+    "eqres_abs_tolerance",
+    "provenance",
+    "outcome_independence"
+  ],
+  "properties": {
+    "record_id": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "status": {"const": "FROZEN"},
+    "r_t_m": {"type": "number", "exclusiveMinimum": 0},
+    "H0_m": {"type": "number", "exclusiveMinimum": 0},
+    "rho0_kg_m3": {"type": "number", "exclusiveMinimum": 0},
+    "gstar_m_s2": {"type": "number", "exclusiveMinimum": 0},
+    "mu0_H_m": {"type": "number", "exclusiveMinimum": 0},
+    "omega_frame_rad_s": {"type": "number", "exclusiveMinimum": 0},
+    "sw_geom_max_abs_eta_over_rt": {"type": "number", "exclusiveMinimum": 0},
+    "eqres_abs_tolerance": {"type": "number", "exclusiveMinimum": 0},
+    "provenance": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "outcome_independence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["burgamots_response_used", "selection_basis"],
+      "properties": {
+        "burgamots_response_used": {"const": false},
+        "selection_basis": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
