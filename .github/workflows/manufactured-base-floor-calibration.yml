@@ -1,22 +1,22 @@
-name: manufactured-base-floor-calibration
+name: generic-stationary-base-solver
 
 on:
   push:
     branches:
       - eng/base-floor-calibration
     paths:
-      - "engineering/base_floor/manufactured_balance_calibration.py"
+      - "engineering/base_floor/generic_stationary_base_solver.py"
       - ".github/workflows/manufactured-base-floor-calibration.yml"
   workflow_dispatch:
 
 jobs:
-  calibration:
+  generic-base:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run non-solar BASE-floor calibration
+      - name: Run reusable constrained stationary BASE solver
         shell: bash
         run: |
           docker run --rm \
@@ -28,5 +28,5 @@ jobs:
               python3 --version
               python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
-              python3 /work/engineering/base_floor/manufactured_balance_calibration.py
+              python3 /work/engineering/base_floor/generic_stationary_base_solver.py
             '
