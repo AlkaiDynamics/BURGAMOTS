@@ -34,7 +34,7 @@ Audit evidence establishes that the frozen artifact is a frontend-oriented React
 
 - simplified orbital propagation and a visually exaggerated barycentric path rather than JPL state-vector/N-body execution (`I-004`, `I-005`);
 - validation-style values embedded as source literals or mock arrays rather than emitted by an inspectable scientific run (`E-002`, `E-003`, `I-006`, `I-007`);
-- a dimensionless periodic function combining 11.07- and 19.86-year sine terms, named as a “Torque Index” and used to drive visual solar activity (`I-003`, `U-006`);
+- a synthetic periodic visual driver that was historically presented with physical-sounding terminology (`I-003`, `U-006`);
 - prose and diagrams describing DeepXDE/PINN, JPL/SDO/ERA5 ingestion, MHD/Navier–Stokes execution, forecasting, and validation that are not present in the audited runtime dependency/tree (`I-001`, `I-002`, `P-005`, `E-006`, `U-007`).
 
 These are implementation-state observations. They do not determine whether the underlying hypotheses are true or false.
@@ -44,11 +44,11 @@ These are implementation-state observations. They do not determine whether the u
 The successor must not preserve the following as established empirical claims unless a future inspectable evidence chain independently earns them:
 
 - “validated” or equivalent validation status (`U-001`);
-- `5σ` confidence/significance (`S-005`, `U-005`);
-- `99.8%` historical accuracy (`U-005`, `E-003`);
-- `94.2%` blind-test performance (`S-006`, `U-005`);
+- historical extreme-significance language (`S-005`, `U-005`);
+- historical accuracy language without an inspectable generation path (`U-005`, `E-003`);
+- historical blind-test performance language without a frozen held-out boundary (`S-006`, `U-005`);
 - Granger “causal flow” or causal interpretation without the required analysis chain (`S-001`, `S-002`, `U-004`);
-- long-horizon superiority / 10× improvement (`E-003`, `U-005`);
+- historical long-horizon superiority claims (`E-003`, `U-005`);
 - prospective forecast performance without a timestamped pre-outcome record (`P-004`, `L-002`);
 - repository reproducibility of the claimed DeepXDE/data/notebook stack (`E-006`, `P-005`);
 - active DeepXDE/PINN execution (`I-001`, `U-003`, `U-007`);
