@@ -1,4 +1,4 @@
-name: engineering-discrete-gradient-manufactured
+name: engineering-discrete-gradient-full-step
 
 on:
   push:
@@ -6,18 +6,19 @@ on:
       - eng/discrete-gradient-timestepper
     paths:
       - "engineering/timestepper/manufactured_discrete_gradient.py"
+      - "engineering/timestepper/full_unforced_step.py"
       - "numerics/coefficient_centering.py"
       - ".github/workflows/engineering-discrete-gradient.yml"
   workflow_dispatch:
 
 jobs:
-  manufactured-dg:
+  full-dg:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run manufactured A1 discrete-gradient kernel
+      - name: Run A1 discrete-gradient kernel and full nonlinear step
         shell: bash
         run: |
           docker run --rm \
@@ -29,4 +30,5 @@ jobs:
               python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
               PYTHONPATH=/work python3 /work/engineering/timestepper/manufactured_discrete_gradient.py
+              PYTHONPATH=/work python3 /work/engineering/timestepper/full_unforced_step.py
             '
