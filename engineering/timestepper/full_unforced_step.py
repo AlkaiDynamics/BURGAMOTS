@@ -75,9 +75,32 @@ def zero_mean_projection(mesh, V0, dxq, source, name):
         == gamma * source * dxq,
         z,
         solver_parameters={
-            "mat_type": "aij",
-            "ksp_type": "preonly",
-            "pc_type": "lu",
+            "mat_type": "matfree",
+            "ksp_type": "fgmres",
+            "ksp_rtol": 1.0e-14,
+            "ksp_atol": 1.0e-15,
+            "pc_type": "fieldsplit",
+            "pc_fieldsplit_type": "schur",
+            "pc_fieldsplit_schur_fact_type": "full",
+            "pc_fieldsplit_0_fields": "0",
+            "pc_fieldsplit_1_fields": "1",
+            "fieldsplit_0": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {
+                    "ksp_type": "gmres",
+                    "ksp_rtol": 1.0e-14,
+                    "ksp_atol": 1.0e-15,
+                    "pc_type": "jacobi",
+                },
+            },
+            "fieldsplit_1": {
+                "ksp_type": "gmres",
+                "ksp_rtol": 1.0e-14,
+                "ksp_atol": 1.0e-15,
+                "pc_type": "none",
+            },
         },
     )
     out = Function(V0, name=name)
