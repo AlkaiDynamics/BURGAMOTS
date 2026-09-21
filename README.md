@@ -85,37 +85,13 @@ UNRESOLVED
 
 Successor boundary controls apply only to successor runs. Their existence does not establish that the frozen historical pipeline was leakage-free.
 
-## Solar visualization archive
+## Legacy demo purge
 
-The exact frozen `SolarSystemViz.tsx` source is preserved at:
+The obsolete demo-era scientific-looking numbers, validation-style charts, historical paper component, synthetic cycle driver, and dormant solar-system visualization source have been removed from the BURGAMOTS successor branch.
 
-```text
-protected/solar-visualization-frozen-8a9029b6.tsx
-```
+The immutable historical audit remains under `audit/2026-09-12/` so the removal is traceable without allowing those values back into product logic, presentation, fixtures, or current documentation.
 
-The preserved source matches frozen Git blob:
-
-```text
-e56d956cf927c56b24543259ccee9475ab41d6b6
-```
-
-Executed SHA-256 verification of the protected source produced:
-
-```text
-4d0efb7144d437f66625bdaadd357b8e8e76c605e9870164f15eff81ee820180
-```
-
-The archive is retained for possible AYLI/product reuse and has no authority over scientific claim state.
-
-BURGAMOTS is not required to keep that visualization mounted in the active application. The active evidence interface does not depend on it.
-
-See `SOLAR_VISUALIZATION_BACKUP_REPORT.md` for preservation details.
-
-## Historical source files
-
-Historical presentation components remain in the repository for provenance and auditability, but they are outside the active scientific claim path. This includes historical chart, paper, diagram, and visualization components that previously presented unsupported result-like material.
-
-Their continued presence in source control does not make their historical claims active.
+A repository-wide `audit:legacy-numbers` gate prevents legacy numeric claim forms and demo terminology from re-entering the non-audit project surface.
 
 ## Current UI behavior
 
@@ -144,7 +120,7 @@ npm run audit:provenance
 npm run audit:leakage
 npm run audit:claims
 npm run audit:env
-npm run audit:solar-backup
+npm run audit:legacy-numbers
 npm run reproduce
 npm run verify
 ```
@@ -173,7 +149,7 @@ Observed execution results:
 - Successor leakage-boundary audit passed while historical leakage remained `UNRESOLVED`.
 - Active-claim audit passed.
 - Active-client environment-variable audit passed.
-- Solar-backup blob and SHA-256 audit passed.
+- Legacy-number purge audit passed.
 - Reproduction confirmed the original-purpose hypothesis remains `BLOCKED`.
 - Reproduction confirmed the public heliophysics proposal remains `BLOCKED`.
 - Production Vite build completed successfully on Vercel.
@@ -207,7 +183,6 @@ REFRACTOR_REASONING.md
 IMPLEMENTATION_PLAN.md
 IMPLEMENTATION_REVIEW.md
 IMPLEMENTATION_REPORT.md
-SOLAR_VISUALIZATION_BACKUP_REPORT.md
 audit/2026-09-12/
 ```
 
