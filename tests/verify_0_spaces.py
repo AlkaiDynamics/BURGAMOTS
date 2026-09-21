@@ -123,7 +123,8 @@ def test_verify_0():
     # CG2+B3 element, so an analytic-expression interpolate() is not available.
     # That is unrelated to the exact-sequence property we are testing.
     #
-    # Build a deterministic FE function directly in V0. Any A_h in V0 is a
+    # Build a deterministic FE function directly in V0; this avoids any analytic projection.
+    # Any A_h in V0 is a
     # valid probe for D*C == 0; no analytic projection is required.
     A_h = Function(V0, name="A_h_probe")
     owned = A_h.dat.data
