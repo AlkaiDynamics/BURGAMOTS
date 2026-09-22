@@ -307,13 +307,12 @@ def one_step(dt_value=2.0e-3):
             "snes_atol": 1.0e-12,
             "snes_stol": 1.0e-12,
             "snes_max_it": 40,
-            "mat_type": "nest",
-            "sub_mat_type": "aij",
-            "ksp_type": "gmres",
-            "ksp_rtol": 1.0e-11,
-            "ksp_atol": 1.0e-12,
-            "ksp_max_it": 1000,
-            "pc_type": "none",
+            # First coupled correctness gate uses a monolithic direct
+            # Jacobian solve.  This changes only linear algebra; the nonlinear
+            # equations, manufactured state, and acceptance gates are fixed.
+            "mat_type": "aij",
+            "ksp_type": "preonly",
+            "pc_type": "lu",
         },
     )
 
