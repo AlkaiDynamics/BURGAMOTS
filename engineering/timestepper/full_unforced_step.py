@@ -307,12 +307,26 @@ def one_step(dt_value=2.0e-3):
             "snes_atol": 1.0e-12,
             "snes_stol": 1.0e-12,
             "snes_max_it": 40,
-            # First coupled correctness gate uses a monolithic direct
-            # Jacobian solve.  This changes only linear algebra; the nonlinear
-            # equations, manufactured state, and acceptance gates are fixed.
-            "mat_type": "aij",
-            "ksp_type": "preonly",
-            "pc_type": "lu",
+            # R-space gauge constraint requires nested assembly on this
+            # Firedrake stack.  Split A+gauge from the remaining coupled
+            # physical/Riesz/PV fields; equations and gates are unchanged.
+            "mat_type": "nest",
+            "ksp_type": "fgmres",
+            "ksp_rtol": 1.0e-11,
+            "ksp_atol": 1.0e-12,
+            "ksp_max_it": 500,
+            "pc_type": "fieldsplit",
+            "pc_fieldsplit_type": "additive",
+            "pc_fieldsplit_0_fields": "0,1,3,4,5,6",
+            "pc_fieldsplit_1_fields": "2,7",
+            "fieldsplit_0": {
+                "ksp_type": "preonly",
+                "pc_type": "lu",
+            },
+            "fieldsplit_1": {
+                "ksp_type": "preonly",
+                "pc_type": "lu",
+            },
         },
     )
 
