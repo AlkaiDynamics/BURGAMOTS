@@ -404,13 +404,13 @@ def solve_generic_base():
             "snes_atol": 1.0e-11,
             "snes_stol": 1.0e-12,
             "snes_max_it": 60,
-            "mat_type": "nest",
-            "sub_mat_type": "aij",
-            "ksp_type": "gmres",
-            "ksp_rtol": 1.0e-11,
-            "ksp_atol": 1.0e-12,
-            "ksp_max_it": 1000,
-            "pc_type": "none",
+            # First reusable-KKT correctness gate uses a monolithic direct
+            # Jacobian solve. This changes only linear algebra; the frozen
+            # target, KKT equations, constraints, and acceptance gate remain
+            # unchanged.
+            "mat_type": "aij",
+            "ksp_type": "preonly",
+            "pc_type": "lu",
         },
     )
 
