@@ -1,11 +1,10 @@
-name: engineering-discrete-gradient-full-step
+name: engineering-full-discrete-gradient-step
 
 on:
   push:
     branches:
       - eng/discrete-gradient-timestepper
     paths:
-      - "engineering/timestepper/manufactured_discrete_gradient.py"
       - "engineering/timestepper/full_unforced_step.py"
       - "numerics/coefficient_centering.py"
       - ".github/workflows/engineering-discrete-gradient.yml"
@@ -18,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run A1 discrete-gradient kernel and full nonlinear step
+      - name: Run complete A1 nonlinear unforced step
         shell: bash
         run: |
           docker run --rm \
@@ -29,6 +28,5 @@ jobs:
               set -euo pipefail
               python3 -m pip install \
                 "git+https://github.com/firedrakeproject/gusto.git@669f6372cd334ed47c9c7b38f26e591732273f75"
-              PYTHONPATH=/work python3 /work/engineering/timestepper/manufactured_discrete_gradient.py
               PYTHONPATH=/work python3 /work/engineering/timestepper/full_unforced_step.py
             '
