@@ -1,0 +1,38 @@
+{
+  "family_id": "BURGAMOTS_MAGNETIC_PRIOR_v1",
+  "version": "1.0.0",
+  "status": "FROZEN_PREREGISTERED_PENDING_ADMIT_EXECUTION",
+  "theta_definition": "colatitude_radians_north_pole_zero",
+  "units": "kG",
+  "profile": "B_phi0^(A)(theta) = A*sin(2*theta)",
+  "symmetry": {
+    "map": "B -> -B",
+    "type": "exact_Z2_model_symmetry_not_gauge",
+    "representative_rule": "retain one sign representative per nonzero amplitude"
+  },
+  "candidate_amplitudes_kG": [0.0, "A_eq", 50.0, 100.0, 300.0],
+  "A_eq_rule": "sqrt(mu0*rho0 * integral(H0*U_sh^2 dA) / integral(H0*sin(2theta)^2 dA))",
+  "A_eq_over_300kG_rule": "inadmissible_and_omitted_not_clipped",
+  "duplicate_rule": "collapse_duplicate_amplitudes",
+  "admission_rule": "ADMIT(A) = MAG1(A) and SW-GEOM(A) and EQRES(A)",
+  "known_admission_definitions": {
+    "MAG1": "min_theta[H0 + eta0^(A)(theta)] > 0",
+    "SW-GEOM": "positive thickness and deformation remains inside the externally frozen shallow-water thin-shell geometry regime",
+    "EQRES": "the frozen B1 equilibrium residual must satisfy the preregistered arithmetic tolerance"
+  },
+  "admission_execution_status": {
+    "status": "BLOCKED_MISSING_EXECUTABLE_SW_GEOM_AND_EQRES_THRESHOLDS",
+    "reason": "The recovered frozen project record contains the predicates and their meanings but not the numerical thin-shell or EQRES thresholds. No threshold is invented here."
+  },
+  "provenance": {
+    "project_preregistration": "BURGAMOTS_MAGNETIC_PRIOR_v1 was frozen before BURGAMOTS response execution.",
+    "100_kG_anchor": "Independent tachocline/flux-tube literature commonly uses ~10^5 G as the strong toroidal field scale required for low-latitude emergence/Joy-law consistency.",
+    "300_kG_anchor": "Modern tachocline review reports a helioseismic upper limit below 30 T (~300 kG); retained as an upper-envelope anchor, not a field measurement.",
+    "50_kG_anchor": "Preregistered intermediate strong-field regime anchor; not an observational field measurement."
+  },
+  "outcome_independence": {
+    "burgamots_response_used": false,
+    "posthoc_member_selection_allowed": false,
+    "selection_basis": "Frozen physical-prior family and external tachocline literature; no BURGAMOTS response exists."
+  }
+}
