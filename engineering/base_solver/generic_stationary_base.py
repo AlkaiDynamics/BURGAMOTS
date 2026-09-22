@@ -83,19 +83,39 @@ def strict_linear():
 
 
 def monolithic_solver_parameters():
-    # Coarse engineering witness: direct factorization removes preconditioner
-    # design from the first correctness gate.
+    # R-space constraints require PETSc nested matrices on this Firedrake
+    # stack.  Group the physical/auxiliary block separately from the two
+    # scalar constraint saddle blocks; this is linear-algebra plumbing only.
     return {
+        "mat_type": "nest",
         "snes_type": "newtonls",
         "snes_rtol": 1.0e-11,
         "snes_atol": 1.0e-12,
         "snes_stol": 1.0e-12,
         "snes_max_it": 50,
         "snes_linesearch_type": "bt",
-        "snes_monitor": None,
-        "ksp_type": "preonly",
-        "pc_type": "lu",
-        "mat_type": "aij",
+        "ksp_type": "fgmres",
+        "ksp_rtol": 1.0e-10,
+        "ksp_atol": 1.0e-12,
+        "ksp_max_it": 1000,
+        "pc_type": "fieldsplit",
+        "pc_fieldsplit_type": "additive",
+        # state/Riesz/PV; eta+mass; A+gauge
+        "pc_fieldsplit_0_fields": "0,3,4,5,6",
+        "pc_fieldsplit_1_fields": "1,7",
+        "pc_fieldsplit_2_fields": "2,8",
+        "fieldsplit_0": {
+            "ksp_type": "preonly",
+            "pc_type": "lu",
+        },
+        "fieldsplit_1": {
+            "ksp_type": "preonly",
+            "pc_type": "lu",
+        },
+        "fieldsplit_2": {
+            "ksp_type": "preonly",
+            "pc_type": "lu",
+        },
     }
 
 
