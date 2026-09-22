@@ -1,0 +1,36 @@
+{
+  "record_id": "BURGAMOTS_OMEGA0_HELIOSEISMIC_FIT_v1",
+  "version": "1.0.0",
+  "status": "FROZEN",
+  "source": {
+    "citation": "Analytical solar internal-rotation profile reproducing the helioseismic fit used in Schou et al. (1998) / Charbonneau et al. (1999), coefficients reproduced in MNRAS 506, 2189 (2021), Eq. 7.",
+    "locator": "https://academic.oup.com/mnras/article/506/2/2189/6308382",
+    "acquired_at": "2026-09-21",
+    "source_version": "MNRAS 506(2), Eq. 7"
+  },
+  "coordinate_convention": {
+    "theta_definition": "colatitude_radians_north_pole_zero",
+    "frame": "sidereal angular velocity; record stores Omega/2pi in nHz and evaluator returns rad/s"
+  },
+  "units": "Omega_over_2pi_nHz",
+  "representation": {
+    "type": "coefficients",
+    "basis": "omega0_over_2pi_nHz = c0 + c2*cos(theta)^2 + c4*cos(theta)^4 at r=0.700 R_sun, obtained by evaluating the published transition profile at r_t where erf(0)=0",
+    "coefficients": [446.75, -31.345, -33.565]
+  },
+  "validity": {
+    "evaluation_radius_Rsun": 0.7,
+    "published_transition_midpoint_Rsun": 0.7,
+    "published_transition_width_Rsun": 0.025,
+    "published_Omega_RZ_over_2pi_nHz": 432.8,
+    "published_Omega_EQ_over_2pi_nHz": 460.7,
+    "published_alpha2_over_2pi_nHz": -62.69,
+    "published_alpha4_over_2pi_nHz": -67.13,
+    "derivation": "At r=r_t the transition factor is one half, so Omega0=(Omega_RZ+Omega_SCZ(theta))/2."
+  },
+  "content_sha256": "7315cef291e209939f5bc4379612e42fa00ac6832d02c02ebd771f03149609f2",
+  "outcome_independence": {
+    "burgamots_response_used": false,
+    "selection_basis": "Published helioseismic rotation fit selected and frozen before any BURGAMOTS M0/M1 response exists."
+  }
+}
