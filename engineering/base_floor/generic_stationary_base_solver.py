@@ -394,25 +394,95 @@ def solve_generic_base():
     v = TestFunction(W)
     F = derivative(L, z, v)
 
-    solve(
-        F == 0,
-        z,
-        solver_parameters={
-            "snes_type": "newtonls",
-            "snes_linesearch_type": "bt",
-            "snes_rtol": 1.0e-10,
-            "snes_atol": 1.0e-11,
-            "snes_stol": 1.0e-12,
-            "snes_max_it": 60,
-            # First reusable-KKT correctness gate uses a monolithic direct
-            # Jacobian solve. This changes only linear algebra; the frozen
-            # target, KKT equations, constraints, and acceptance gate remain
-            # unchanged.
-            "mat_type": "aij",
-            "ksp_type": "preonly",
-            "pc_type": "lu",
-        },
-    )
+    # Firedrake can assemble this KKT Jacobian legally as a MatNest, including
+    # the two Real-space constraint rows, but PyOP2 cannot assemble the same
+    # mixed object monolithically.  Keep the exact KKT residual and perform a
+    # small explicit Newton loop: assemble as MatNest, convert the completed
+    # PETSc nest to AIJ, then use a direct linear solve.  This is linear-algebra
+    # plumbing only; objective, constraints, target, and acceptance gates are
+    # unchanged.
+    Jform = derivative(F, z)
+    max_newton = 60
+    rtol = 1.0e-10
+    atol = 1.0e-11
+    initial_norm = None
+    converged = False
+
+    for iteration in range(max_newton):
+        residual = assemble(F)
+        with residual.dat.vec_ro as rv:
+            rnorm = rv.norm(PETSc.NormType.NORM_2)
+
+        if initial_norm is None:
+            initial_norm = max(rnorm, 1.0)
+        rel = rnorm / initial_norm
+        print(
+            f"GENERIC BASE NEWTON iter={iteration:02d} "
+            f"residual={rnorm:.17e} relative={rel:.17e}"
+        )
+        if rnorm < atol or rel < rtol:
+            converged = True
+            break
+
+        Jnest = assemble(Jform, mat_type="nest")
+        A = Jnest.petscmat.convert("aij")
+
+        ksp = PETSc.KSP().create(comm=mesh.comm)
+        ksp.setOperators(A)
+        ksp.setType("preonly")
+        pc = ksp.getPC()
+        pc.setType("lu")
+        ksp.setFromOptions()
+
+        with residual.dat.vec_ro as rv, z.dat.vec as zv:
+            rhs = rv.copy()
+            rhs.scale(-1.0)
+            delta = zv.duplicate()
+            delta.set(0.0)
+            ksp.solve(rhs, delta)
+            if ksp.getConvergedReason() <= 0:
+                raise RuntimeError(
+                    f"generic BASE Newton linear solve failed: "
+                    f"{ksp.getConvergedReason()}"
+                )
+
+            z_before = zv.copy()
+            accepted = False
+            alpha = 1.0
+            for _ in range(14):
+                zv.copy(z_before)
+                zv.axpy(alpha, delta)
+
+                # Positivity is a hard constraint; never evaluate a trial state
+                # with nonpositive H in the rational magnetic terms.
+                hmin_trial = float(
+                    np.min(H0_h.dat.data_ro + subs[1].dat.data_ro)
+                )
+                if hmin_trial <= 0.0:
+                    alpha *= 0.5
+                    continue
+
+                trial_residual = assemble(F)
+                with trial_residual.dat.vec_ro as trv:
+                    trial_norm = trv.norm(PETSc.NormType.NORM_2)
+                if trial_norm < rnorm:
+                    accepted = True
+                    break
+                alpha *= 0.5
+
+            if not accepted:
+                zv.copy(z_before)
+                raise RuntimeError(
+                    "generic BASE Newton line search failed to reduce KKT residual"
+                )
+
+        ksp.destroy()
+        A.destroy()
+
+    if not converged:
+        raise RuntimeError(
+            f"generic BASE Newton failed after {max_newton} iterations"
+        )
 
     u_s = Function(V1, name="base_u")
     eta_s = Function(V2, name="base_eta")
