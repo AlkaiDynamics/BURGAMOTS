@@ -342,7 +342,7 @@ def solve_discrete_base(target_builder=manufactured_target):
         # stationary SD2 with scalar compatibility multiplier
         + (-phi_eta * div(UU) + mum * phi_eta) * dxq
         # stationary SD3 with scalar gauge compatibility multiplier
-        + (-gamma_A * (UU / H) * grad(AA) + mug * gamma_A) * dxq
+        + (-gamma_A * inner(UU / H, grad(AA)) + mug * gamma_A) * dxq
         # target mass and zero-mean A gauge
         + nu_mass * (H - H_hat) * dxq
         + nu_gauge * AA * dxq
