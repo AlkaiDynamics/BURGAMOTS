@@ -212,8 +212,10 @@ def one_step(dt_value=2.0e-3):
         mesh, V0, V1, V2, dxq, u_n, eta_n, A_n, H0_h
     )
 
-    R = FunctionSpace(mesh, "R", 0)
-    W = V1 * V2 * V0 * V1 * V2 * V0 * V0 * R
+    # The constant mode of A is pure gauge: all physical magnetic quantities
+    # use grad(A).  Solve only the seven physical FE fields here and select the
+    # zero-mean representative deterministically after the step.
+    W = V1 * V2 * V0 * V1 * V2 * V0 * V0
     z = Function(W, name="A1_full_step")
     (
         u_p_f,
@@ -223,7 +225,6 @@ def one_step(dt_value=2.0e-3):
         Kbar_f,
         Mbar_f,
         qbar_f,
-        lam_f,
     ) = z.subfunctions
 
     u_p_f.assign(u_n)
@@ -233,10 +234,9 @@ def one_step(dt_value=2.0e-3):
     Kbar_f.assign(K0)
     Mbar_f.assign(M0)
     qbar_f.assign(q0)
-    lam_f.assign(0.0)
 
-    u_p, eta_p, A_p, Ubar, Kbar, Mbar, qbar, lam = split(z)
-    wu, phiH, gammaA, wU, phiK, gammaM, gammaQ, mu = TestFunctions(W)
+    u_p, eta_p, A_p, Ubar, Kbar, Mbar, qbar = split(z)
+    wu, phiH, gammaA, wU, phiK, gammaM, gammaQ = TestFunctions(W)
 
     n = CellNormal(mesh)
     dtc = Constant(dt_value)
@@ -291,8 +291,6 @@ def one_step(dt_value=2.0e-3):
         + (
             gammaA * (A_p - A_n) / dtc
             + gammaA * inner(Ubar / Hbar, grad(Abar))
-            + lam * gammaA
-            + mu * A_p
         )
         * dxq
     )
@@ -307,81 +305,23 @@ def one_step(dt_value=2.0e-3):
             "snes_atol": 1.0e-12,
             "snes_stol": 1.0e-12,
             "snes_max_it": 40,
-            # Use matrix-free outer Jacobian and one field split per mixed
-            # field.  This is the same Firedrake-supported strategy used by
-            # the project's R-space gauge solves and avoids grouped MatNest
-            # submatrix extraction.  Equations/gates are unchanged.
-            "mat_type": "matfree",
-            "ksp_type": "fgmres",
-            "ksp_rtol": 1.0e-11,
-            "ksp_atol": 1.0e-12,
-            "ksp_max_it": 1000,
-            "pc_type": "fieldsplit",
-            "pc_fieldsplit_type": "additive",
-            "pc_fieldsplit_0_fields": "0",
-            "pc_fieldsplit_1_fields": "1",
-            "pc_fieldsplit_2_fields": "2",
-            "pc_fieldsplit_3_fields": "3",
-            "pc_fieldsplit_4_fields": "4",
-            "pc_fieldsplit_5_fields": "5",
-            "pc_fieldsplit_6_fields": "6",
-            "pc_fieldsplit_7_fields": "7",
-            "fieldsplit_0": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_1": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_2": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_3": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_4": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_5": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_6": {
-                "ksp_type": "preonly",
-                "pc_type": "python",
-                "pc_python_type": "firedrake.AssembledPC",
-                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
-            },
-            "fieldsplit_7": {
-                "ksp_type": "preonly",
-                "pc_type": "none",
-            },
+            # No Real-space rows remain in the physical nonlinear system, so
+            # Firedrake can assemble a monolithic FE Jacobian and solve it
+            # directly.  Gauge normalization is applied after the solve.
+            "mat_type": "aij",
+            "ksp_type": "preonly",
+            "pc_type": "lu",
         },
     )
 
     # Materialize the prognostic output state.
     u_p_out = Function(V1, name="u_np1")
     eta_p_out = Function(V2, name="eta_np1")
-    A_p_out = Function(V0, name="A_np1")
     u_p_out.assign(u_p_f)
     eta_p_out.assign(eta_p_f)
-    A_p_out.assign(A_p_f)
+    # Deterministic gauge normalization.  Subtracting the constant mode does
+    # not change grad(A), m, magnetic energy, or any physical evolution term.
+    A_p_out = zero_mean_projection(mesh, V0, dxq, A_p_f, "A_np1")
 
     H_n_out = Function(V2, name="H_n_out")
     H_p_out = Function(V2, name="H_np1")
@@ -423,7 +363,7 @@ def one_step(dt_value=2.0e-3):
     print(f"FULL-DG STEP relative mass error             = {mrel:.17e}")
     print(f"FULL-DG STEP gauge                           = {gauge:.17e}")
     print(f"FULL-DG STEP DIVB L2                         = {divb:.17e}")
-    print(f"FULL-DG STEP gauge multiplier                = {float(lam_f.dat.data_ro[0]):.17e}")
+    print("FULL-DG STEP gauge selection                 = POSTSTEP_ZERO_MEAN_PROJECTION")
 
     if not pos:
         raise AssertionError(f"NUM-POS failed: Hmin={hmin}")
