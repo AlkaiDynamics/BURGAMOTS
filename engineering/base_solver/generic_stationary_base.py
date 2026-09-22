@@ -83,11 +83,12 @@ def strict_linear():
 
 
 def monolithic_solver_parameters():
-    # R-space constraints require PETSc nested matrices on this Firedrake
-    # stack.  Group the physical/auxiliary block separately from the two
-    # scalar constraint saddle blocks; this is linear-algebra plumbing only.
-    return {
-        "mat_type": "nest",
+    # Use the same matrix-free/assembled-PC pattern already exercised by the
+    # project's V0 x R gauge solves.  The outer Jacobian remains matrix-free;
+    # each physical field gets an assembled local preconditioner and the two
+    # Real constraint fields remain explicit scalar blocks.
+    params = {
+        "mat_type": "matfree",
         "snes_type": "newtonls",
         "snes_rtol": 1.0e-11,
         "snes_atol": 1.0e-12,
@@ -100,23 +101,25 @@ def monolithic_solver_parameters():
         "ksp_max_it": 1000,
         "pc_type": "fieldsplit",
         "pc_fieldsplit_type": "additive",
-        # state/Riesz/PV; eta+mass; A+gauge
-        "pc_fieldsplit_0_fields": "0,3,4,5,6",
-        "pc_fieldsplit_1_fields": "1,7",
-        "pc_fieldsplit_2_fields": "2,8",
-        "fieldsplit_0": {
-            "ksp_type": "preonly",
-            "pc_type": "lu",
-        },
-        "fieldsplit_1": {
-            "ksp_type": "preonly",
-            "pc_type": "lu",
-        },
-        "fieldsplit_2": {
-            "ksp_type": "preonly",
-            "pc_type": "lu",
-        },
     }
+    for i in range(7):
+        params[f"pc_fieldsplit_{i}_fields"] = str(i)
+        params[f"fieldsplit_{i}"] = {
+            "ksp_type": "preonly",
+            "pc_type": "python",
+            "pc_python_type": "firedrake.AssembledPC",
+            "assembled": {
+                "ksp_type": "preonly",
+                "pc_type": "lu",
+            },
+        }
+    for i in (7, 8):
+        params[f"pc_fieldsplit_{i}_fields"] = str(i)
+        params[f"fieldsplit_{i}"] = {
+            "ksp_type": "preonly",
+            "pc_type": "none",
+        }
+    return params
 
 
 def build_frozen_spaces():
