@@ -307,25 +307,70 @@ def one_step(dt_value=2.0e-3):
             "snes_atol": 1.0e-12,
             "snes_stol": 1.0e-12,
             "snes_max_it": 40,
-            # R-space gauge constraint requires nested assembly on this
-            # Firedrake stack.  Split A+gauge from the remaining coupled
-            # physical/Riesz/PV fields; equations and gates are unchanged.
-            "mat_type": "nest",
+            # Use matrix-free outer Jacobian and one field split per mixed
+            # field.  This is the same Firedrake-supported strategy used by
+            # the project's R-space gauge solves and avoids grouped MatNest
+            # submatrix extraction.  Equations/gates are unchanged.
+            "mat_type": "matfree",
             "ksp_type": "fgmres",
             "ksp_rtol": 1.0e-11,
             "ksp_atol": 1.0e-12,
-            "ksp_max_it": 500,
+            "ksp_max_it": 1000,
             "pc_type": "fieldsplit",
             "pc_fieldsplit_type": "additive",
-            "pc_fieldsplit_0_fields": "0,1,3,4,5,6",
-            "pc_fieldsplit_1_fields": "2,7",
+            "pc_fieldsplit_0_fields": "0",
+            "pc_fieldsplit_1_fields": "1",
+            "pc_fieldsplit_2_fields": "2",
+            "pc_fieldsplit_3_fields": "3",
+            "pc_fieldsplit_4_fields": "4",
+            "pc_fieldsplit_5_fields": "5",
+            "pc_fieldsplit_6_fields": "6",
+            "pc_fieldsplit_7_fields": "7",
             "fieldsplit_0": {
                 "ksp_type": "preonly",
-                "pc_type": "lu",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
             },
             "fieldsplit_1": {
                 "ksp_type": "preonly",
-                "pc_type": "lu",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
+            },
+            "fieldsplit_2": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
+            },
+            "fieldsplit_3": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
+            },
+            "fieldsplit_4": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
+            },
+            "fieldsplit_5": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
+            },
+            "fieldsplit_6": {
+                "ksp_type": "preonly",
+                "pc_type": "python",
+                "pc_python_type": "firedrake.AssembledPC",
+                "assembled": {"ksp_type": "preonly", "pc_type": "lu"},
+            },
+            "fieldsplit_7": {
+                "ksp_type": "preonly",
+                "pc_type": "none",
             },
         },
     )
