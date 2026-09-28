@@ -415,6 +415,9 @@ def solve_generic_base():
             "ksp_rtol": 1.0e-12,
             "ksp_atol": 1.0e-13,
             "ksp_max_it": 10000,
+            "ksp_converged_reason": None,
+            "snes_converged_reason": None,
+            "ksp_view": None,
             "pc_type": "none",
         },
     )
